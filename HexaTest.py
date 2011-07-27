@@ -5,7 +5,7 @@ Created on Jul 25, 2011
 '''
 from PySide.QtCore import *
 from PySide.QtGui import *
-from t1.Hexagon import Hexagon,Map
+from Hexagon import Hexagon,Map
 import sys
 
 class HexaTest(QMainWindow):
@@ -52,28 +52,33 @@ class HexaTest(QMainWindow):
                 p.drawPath(path)
             
     def mousePressEvent(self, event):
-        try:
-            self.map.tiles[self.i][self.j].chosen=False
-            for neighbours in self.map.tiles[self.i][self.j].getNeighborsI():
-                try:
-                    self.map.tiles[neighbours[0]][neighbours[1]].chosen=False
-                except (IndexError,TypeError):
-                    pass
-        except IndexError:
-            pass
+        #=======================================================================
+        # try:
+        #    self.map.tiles[self.i][self.j].chosen=False
+        #    for neighbours in self.map.tiles[self.i][self.j].getNeighborsI():
+        #        try:
+        #            self.map.tiles[neighbours[0]][neighbours[1]].chosen=False
+        #        except (IndexError,TypeError):
+        #            pass
+        # except IndexError:
+        #    pass
+        # 
+        # self.map.tiles[self.i][self.j].chosen=True
+        # for neighbours in self.map.tiles[self.i][self.j].getNeighborsI():
+        #        try:
+        #            self.map.tiles[neighbours[0]][neighbours[1]].chosen=True
+        #        except (IndexError,TypeError):
+        #            pass
+        #=======================================================================
+        
         self.i,self.j= self.map.getHexAt(event.x(), event.y())
-        self.map.tiles[self.i][self.j].chosen=True
-        for neighbours in self.map.tiles[self.i][self.j].getNeighborsI():
-                try:
-                    self.map.tiles[neighbours[0]][neighbours[1]].chosen=True
-                except (IndexError,TypeError):
-                    pass
-        self.repaint()
+        print self.i , self.j
         if event.button() == Qt.RightButton:
-            print 'enter'
             menu=self.map.tiles[self.i][self.j].getContextMenu()
             menu.exec_(event.globalPos())
-            print 'done'
+        elif event.button() == Qt.LeftButton:
+            self.map.tellClick(self.i,self.j)
+            self.repaint()
         
         
 if __name__=='__main__':

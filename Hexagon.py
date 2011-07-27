@@ -3,10 +3,11 @@ Created on Jul 25, 2011
 
 @author: anttir
 '''
-from math import sqrt,floor
+from math import sqrt,floor, copysign
 from PySide.QtGui import QImage,QMenu
 from PySide.QtCore import QRect,QPoint
 from random import randint
+from functools import partial
 
 class Hexagon():
     neighbor_di=(0, 1, 1, 0, -1, -1)
@@ -44,13 +45,14 @@ class Map():
     def __init__(self):
         self.tiles=[[]]
         self.metrics=Hexagon(-1,-1)
+        self.waitingInput=[]
     
     def createSquareMap(self,w=10,h=10,r=20):
         self.metrics=Hexagon(-1,-1,r)
         for i in xrange(w):
             self.tiles.append([])
             for j in xrange(h):
-                self.tiles[i].append(Tile(i,j,r,self,Ground() if randint(1,10)<7 else Water()))
+                self.tiles[i].append(Tile(i,j,r,self,Ground() if randint(1,10)<-1 else Water()))
         self.tiles[2][3].addUnit(Tank())
     
     def getHexAt(self,x,y):
@@ -64,8 +66,12 @@ class Map():
         else:
             return (i_t-1,j_t-(i_t-1)%2+d_j)
     
-    def getNextClick(self):
-        
+    def tellClick(self,i,j):
+        if self.waitingInput:
+            for action in self.waitingInput:
+                action(i,j)
+                self.waitingInput.remove(action)
+    
 class Terrain(object):
     def __init__(self,id,image):
         self.id=id
@@ -90,15 +96,31 @@ class Tile(Hexagon):
         menu = QMenu()
         if self.units:
             menu.addAction('Move').triggered.connect(self.moveAction)
-            
+        
+        menu.addAction('Dist').triggered.connect(self.distA)
         menu.addAction('Cancel')
         return menu
-    
+    def distA(self):
+        self.map.waitingInput.append(self.distance)
+        
     def moveAction(self):
-        self.map.getNextClick()
+        self.map.waitingInput.append(self.moveUnit)
+    
+    def moveUnit(self,i,j):
+        self.units[0].move(i,j)
+    
+    def distance(self,i,j):
+        di=i-self.i
+        dj=j-self.j
+        if copysign(1,di) == copysign(1,dj):
+            dist = max(abs(di),abs(dj));
+        else:
+            dist = abs(di) + abs(dj);
+        print 'Distance is '+str(dist)
+        
+
     
     def addUnit(self,unit):
-        print 'added'
         unit.tile=self
         self.units.append(unit)
     
@@ -122,5 +144,11 @@ class Unit(object):
         
 class Tank(Unit):
     def __init__(self,tile=None):
-        Unit.__init__(self, 'tank', QImage('data/alien1.gif'), tile)
+        Unit.__init__(self, 'tank', QImage('alien1.gif'), tile)
+    
+    def move(self,i,j):
+        if self.tile.map.tiles[i][j].terrain.id == 'water':
+            print 'Tanks can\'t swim'
+        else:
+            super(Tank,self).move(i,j)
         
