@@ -4,12 +4,12 @@ Created on Jul 25, 2011
 @author: anttir
 '''
 from math import sqrt,floor, copysign
-from PySide.QtGui import QImage,QMenu
-from PySide.QtCore import QRect,QPoint
+from PySide.QtGui import QImage, QMenu, QGraphicsPolygonItem, QPolygon, QBrush, QPen, QPixmap, QGraphicsPixmapItem
+from PySide.QtCore import QRect, QPoint, Qt
 from random import randint
 from functools import partial
 
-class Hexagon():
+class Hexagon(object):
     neighbor_di=(0, 1, 1, 0, -1, -1)
     neighbor_dj=((-1, -1, 0, 1, 0, -1),(-1, 0, 1, 1, 1, 0 ))
     def __init__(self,i,j,radius=20):
@@ -41,7 +41,7 @@ class Hexagon():
 
 
 
-class Map():
+class Map(object):
     def __init__(self):
         self.tiles=[[]]
         self.metrics=Hexagon(-1,-1)
@@ -52,8 +52,8 @@ class Map():
         for i in xrange(w):
             self.tiles.append([])
             for j in xrange(h):
-                self.tiles[i].append(Tile(i,j,r,self,Ground() if randint(1,10)<-1 else Water()))
-        self.tiles[2][3].addUnit(Tank())
+                self.tiles[i].append(Tile(i,j,r,self,Ground() if randint(1,10)< 10 else Water()))
+        self.tiles[3][3].addUnit(Tank())
     
     def getHexAt(self,x,y):
         i_t=x/self.metrics.s
@@ -85,13 +85,38 @@ class Water(Terrain):
     def __init__(self):
         Terrain.__init__(self, 'water', QImage('water.png'))
 
-class Tile(Hexagon):
+class Tile(Hexagon, QGraphicsPolygonItem):
     def __init__(self,i,j,r,map,terrain=Ground()):
         Hexagon.__init__(self, i, j, r)
+        poly = QPolygon()
+        for p in self.corners:
+            poly << QPoint(*p)
+        QGraphicsPolygonItem.__init__(self, poly)
         self.terrain=terrain
         self.units=[]
+        self.unitImages = []
         self.map=map
+        self.setBrush(QBrush(self.terrain.image))
+        self.setPen(QPen())
     
+    def mousePressEvent(self, event):
+        neighbours = [self.map.tiles[n[0]][n[1]] for n in self.getNeighborsI() if n]
+        for row in self.map.tiles:
+            for n in row:
+                if n in neighbours:
+                    n.setChosen(True)
+                else:
+                    n.setChosen(False)
+        self.setChosen(True)
+
+        if event.button() == Qt.RightButton:
+            menu = self.getContextMenu()
+            menu.exec_(event.screenPos())
+        elif event.button() == Qt.LeftButton:
+            self.map.tellClick(self.i, self.j)
+
+        self.scene().update()
+        
     def getContextMenu(self):
         menu = QMenu()
         if self.units:
@@ -100,6 +125,7 @@ class Tile(Hexagon):
         menu.addAction('Dist').triggered.connect(self.distA)
         menu.addAction('Cancel')
         return menu
+
     def distA(self):
         self.map.waitingInput.append(self.distance)
         
@@ -118,15 +144,29 @@ class Tile(Hexagon):
             dist = abs(di) + abs(dj);
         print 'Distance is '+str(dist)
         
+    def setChosen(self, ch):
+        self.chosen = ch
+        if ch:
+            redPen = QPen(Qt.red)
+            redPen.setWidth(2)
+            self.setPen(redPen)
+        else:
+            self.setPen(QPen())
 
     
     def addUnit(self,unit):
         unit.tile=self
         self.units.append(unit)
+        image = QGraphicsPixmapItem(QPixmap(unit.image), self)
+        image.setOffset(self.x + 12, self.y + 10)
+        self.unitImages.append(image)
     
     def removeUnit(self,unit):
         try:
-            self.units.remove(unit)
+            i = self.units.index(unit)
+            self.units.pop(i)
+            self.unitImages[i].setParentItem(None)
+            self.unitImages.pop(i)
         except ValueError:
             pass
         
@@ -139,8 +179,7 @@ class Unit(object):
     def move(self,i,j):
         tiles=self.tile.map.tiles
         self.tile.removeUnit(self)
-        tiles[i][j].units.append(self)
-        self.tile=tiles[i][j]
+        tiles[i][j].addUnit(self)
         
 class Tank(Unit):
     def __init__(self,tile=None):

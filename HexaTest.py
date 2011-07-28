@@ -52,24 +52,23 @@ class HexaTest(QMainWindow):
                 p.drawPath(path)
             
     def mousePressEvent(self, event):
-        #=======================================================================
-        # try:
-        #    self.map.tiles[self.i][self.j].chosen=False
-        #    for neighbours in self.map.tiles[self.i][self.j].getNeighborsI():
-        #        try:
-        #            self.map.tiles[neighbours[0]][neighbours[1]].chosen=False
-        #        except (IndexError,TypeError):
-        #            pass
-        # except IndexError:
-        #    pass
-        # 
-        # self.map.tiles[self.i][self.j].chosen=True
-        # for neighbours in self.map.tiles[self.i][self.j].getNeighborsI():
-        #        try:
-        #            self.map.tiles[neighbours[0]][neighbours[1]].chosen=True
-        #        except (IndexError,TypeError):
-        #            pass
-        #=======================================================================
+        try:
+           self.map.tiles[self.i][self.j].setChosen(False)
+           for neighbours in self.map.tiles[self.i][self.j].getNeighborsI():
+               try:
+                   self.map.tiles[neighbours[0]][neighbours[1]].setChosen(False)
+               except (IndexError,TypeError):
+                   pass
+        except IndexError:
+           pass
+        
+        self.i,self.j= self.map.getHexAt(event.x(), event.y())
+        self.map.tiles[self.i][self.j].setChosen(True)
+        for neighbours in self.map.tiles[self.i][self.j].getNeighborsI():
+               try:
+                   self.map.tiles[neighbours[0]][neighbours[1]].setChosen(True)
+               except (IndexError,TypeError):
+                   pass
         
         self.i,self.j= self.map.getHexAt(event.x(), event.y())
         print self.i , self.j
