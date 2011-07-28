@@ -6,7 +6,7 @@ Created on Jul 25, 2011
 from math import sqrt,floor, copysign
 from PySide.QtGui import QImage, QMenu, QGraphicsPolygonItem, QPolygon, QBrush, QPen, QPixmap, QGraphicsPixmapItem
 from PySide.QtCore import QRect, QPoint, Qt
-from random import randint
+from random import randint, choice
 from functools import partial
 
 class Hexagon(object):
@@ -43,17 +43,25 @@ class Hexagon(object):
 
 class Map(object):
     def __init__(self):
-        self.tiles=[[]]
+        self.tiles=[]
         self.metrics=Hexagon(-1,-1)
         self.waitingInput=[]
     
-    def createSquareMap(self,w=10,h=10,r=20):
+    def createSquareMap(self, numUnits, w=10,h=10,r=20):
         self.metrics=Hexagon(-1,-1,r)
         for i in xrange(w):
             self.tiles.append([])
             for j in xrange(h):
-                self.tiles[i].append(Tile(i,j,r,self,Ground() if randint(1,10)< -1 else Water()))
-        self.tiles[3][3].addUnit(Tank())
+                self.tiles[i].append(Tile(i,j,r,self,Ground() if randint(1,10)< 10 else Water()))
+        for i in xrange(numUnits):
+            while True:
+                #tile = choice(choice(self.tiles))
+                row = choice(self.tiles)
+                tile = choice(row)
+                if tile.terrain.canHoldUnit and not tile.units:
+                    tile.addUnit(Tank())
+                    break
+
     
     def getHexAt(self,x,y):
         i_t=x/self.metrics.s
@@ -75,6 +83,7 @@ class Map(object):
 class Terrain(object):
     def __init__(self,id,image):
         self.id=id
+        self.canHoldUnit = True
         self.image=image
         
 class Ground(Terrain):
@@ -84,6 +93,7 @@ class Ground(Terrain):
 class Water(Terrain):
     def __init__(self):
         Terrain.__init__(self, 'water', QImage('water.png'))
+        self.canHoldUnit = False
 
 class Tile(Hexagon, QGraphicsPolygonItem):
     def __init__(self,i,j,r,map,terrain=Ground()):
@@ -100,7 +110,14 @@ class Tile(Hexagon, QGraphicsPolygonItem):
         self.setPen(QPen())
     
     def mousePressEvent(self, event):
-        neighbours = [self.map.tiles[n[0]][n[1]] for n in self.getNeighborsI() if n]
+        neighbours = []
+        for n in self.getNeighborsI():
+            if n:
+                try:
+                    neighbours.append(self.map.tiles[n[0]][n[1]])
+                except IndexError:
+                    pass
+
         for row in self.map.tiles:
             for n in row:
                 if n in neighbours:
@@ -208,8 +225,8 @@ class Tank(Unit):
         Unit.__init__(self, 'tank', QImage('alien1.gif'), tile)
     
     def move(self,i,j):
-        if self.tile.map.tiles[i][j].terrain.id == 'water':
-            print 'Tanks can\'t swim'
-        else:
+        if self.tile.map.tiles[i][j].terrain.canHoldUnit:
             super(Tank,self).move(i,j)
+        else:
+            print 'Tanks can\'t go there'
         
