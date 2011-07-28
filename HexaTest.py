@@ -33,7 +33,7 @@ class HexaTest(QMainWindow):
                 path=QPainterPath()
                 path.addPolygon(poly)
                 path.closeSubpath()
-                p.drawPath(path)
+                p.drawPolygon(poly)
                 if hex.units:
                     for unit in hex.units:
                         p.drawImage(hex.getImageRect(),unit.image)
@@ -52,24 +52,22 @@ class HexaTest(QMainWindow):
                 p.drawPath(path)
             
     def mousePressEvent(self, event):
-        #=======================================================================
-        # try:
-        #    self.map.tiles[self.i][self.j].chosen=False
-        #    for neighbours in self.map.tiles[self.i][self.j].getNeighborsI():
-        #        try:
-        #            self.map.tiles[neighbours[0]][neighbours[1]].chosen=False
-        #        except (IndexError,TypeError):
-        #            pass
-        # except IndexError:
-        #    pass
-        # 
-        # self.map.tiles[self.i][self.j].chosen=True
-        # for neighbours in self.map.tiles[self.i][self.j].getNeighborsI():
-        #        try:
-        #            self.map.tiles[neighbours[0]][neighbours[1]].chosen=True
-        #        except (IndexError,TypeError):
-        #            pass
-        #=======================================================================
+#        try:
+#           self.map.tiles[self.i][self.j].chosen=False
+#           for neighbours in self.map.tiles[self.i][self.j].getNeighborsI():
+#                try:
+#                   self.map.tiles[neighbours[0]][neighbours[1]].chosen=False
+#                except (IndexError,TypeError):
+#                   pass
+#        except IndexError:
+#           pass
+#        self.i,self.j= self.map.getHexAt(event.x(), event.y())
+#        self.map.tiles[self.i][self.j].chosen=True
+#        for neighbours in self.map.tiles[self.i][self.j].getNeighborsI():
+#                try:
+#                    self.map.tiles[neighbours[0]][neighbours[1]].chosen=True
+#                except (IndexError,TypeError):
+#                    pass
         
         self.i,self.j= self.map.getHexAt(event.x(), event.y())
         print self.i , self.j
