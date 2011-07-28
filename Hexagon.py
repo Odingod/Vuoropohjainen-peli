@@ -112,6 +112,7 @@ class Tile(Hexagon, QGraphicsPolygonItem):
         if event.button() == Qt.RightButton:
             menu = self.getContextMenu()
             menu.exec_(event.screenPos())
+            self.ungrabMouse()
         elif event.button() == Qt.LeftButton:
             self.map.tellClick(self.i, self.j)
 
