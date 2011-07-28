@@ -136,12 +136,9 @@ class Tile(Hexagon, QGraphicsPolygonItem):
         self.units[0].move(i,j)
     
     def distance(self,i,j):
-        di=i-self.i
+        di=-(i-self.i)
         dj=j-self.j
-        if copysign(1,di) == copysign(1,dj):
-            dist = max(abs(di),abs(dj));
-        else:
-            dist = abs(di) + abs(dj);
+        dist = abs(di) + abs(dj) - abs(di)%2;
         print 'Distance is '+str(dist)
         
     def setChosen(self, ch):

@@ -33,7 +33,7 @@ class HexaTest(QMainWindow):
                 path=QPainterPath()
                 path.addPolygon(poly)
                 path.closeSubpath()
-                p.drawPath(path)
+                p.drawPolygon(poly)
                 if hex.units:
                     for unit in hex.units:
                         p.drawImage(hex.getImageRect(),unit.image)
