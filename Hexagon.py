@@ -52,7 +52,7 @@ class Map(object):
         for i in xrange(w):
             self.tiles.append([])
             for j in xrange(h):
-                self.tiles[i].append(Tile(i,j,r,self,Ground() if randint(1,10)< 10 else Water()))
+                self.tiles[i].append(Tile(i,j,r,self,Ground() if randint(1,10)< -1 else Water()))
         self.tiles[3][3].addUnit(Tank())
     
     def getHexAt(self,x,y):
@@ -138,10 +138,33 @@ class Tile(Hexagon, QGraphicsPolygonItem):
         self.units[0].move(i,j)
     
     def distance(self,i,j):
-        di=-(i-self.i)
+        di=i-self.i
         dj=j-self.j
-        dist = abs(di) + abs(dj) - abs(di)%2;
-        print 'Distance is '+str(dist)
+        dist = int(round(abs(di)/2.)) + abs(dj)
+        tempj,tempi=abs(dj),abs(di)
+        dist=0
+        
+        dist-=(i+self.i)%2
+        print (di,dj,tempi,tempj)
+        while tempi > 0:
+            dist+=1
+            tempi-=1
+            tempj-=tempi%2
+            
+            #print (tempi,tempj)
+        while tempj > 0 or tempi > 0:
+            dist+=1
+            tempj-=1
+            #print (tempi,tempj)
+        if dj==0 or di==0:
+            dist = max(abs(dj),abs(di))
+                
+        print 'dist: '+ str(dist)
+        if dj==0:
+            dist=abs(di)
+        #print 'Distance is '+str(dist)+' di: '+str(di) +' dj: '+str(dj)
+    
+        
         
     def setChosen(self, ch):
         self.chosen = ch

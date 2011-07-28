@@ -8,7 +8,6 @@ class MainView(QGraphicsView):
         super(MainView, self).__init__(scene)
         self.map=Map()
         self.map.createSquareMap(10,10,50)
-        self.i,self.j=-1,-1
 
 class MainWindow(QMainWindow):
     def __init__(self, parent=None):
