@@ -6,7 +6,10 @@ from Hexagon import Hexagon, Map
 class Game:
     def __init__(self):
         self.map=Map()
-        self.map.createSquareMap(10,10,50)
+        self.numUnits = 1
+
+    def start(self):
+        self.map.createSquareMap(self.numUnits, 10,10,50)
 
 class MainView(QGraphicsView):
     def __init__(self, scene):
@@ -38,6 +41,27 @@ class MainView(QGraphicsView):
                 self.horizontalScrollBar().triggerAction(QAbstractSlider.SliderMove)
             elif (self.dragPos - event.globalPos()).manhattanLength() < QApplication.startDragDistance():
                 self.dragging = True
+
+class NewGameDialog(QDialog):
+    def __init__(self, game, parent):
+        super(NewGameDialog, self).__init__(parent)
+        self.game = game
+        layout = QFormLayout()
+        self.numUnits = QSpinBox()
+        self.numUnits.setRange(1, 15)
+        self.numUnits.setValue(1)
+        buttons = QDialogButtonBox(QDialogButtonBox.Ok | \
+            QDialogButtonBox.Cancel)
+        buttons.accepted.connect(self.accept)
+        buttons.rejected.connect(self.reject)
+
+        layout.addRow("Number Of Units", self.numUnits)
+        layout.addRow(buttons)
+        self.setLayout(layout)
+
+    def accept(self):
+        self.game.numUnits = self.numUnits.value()
+        super(NewGameDialog, self).accept()
                 
 class MainWindow(QMainWindow):
     def __init__(self, parent=None):
@@ -63,7 +87,13 @@ class MainWindow(QMainWindow):
         self.mainScene = QGraphicsScene()
         self.mainView = MainView(self.mainScene)
         self.game = Game()
+        newGameDialog = NewGameDialog(self.game, self)
+        r = newGameDialog.exec_()
 
+        if r == QDialog.Rejected:
+            self.close()
+
+        self.game.start()
         [[self.mainScene.addItem(hex) for hex in row] for row in self.game.map.tiles]
 
         self.setCentralWidget(self.mainView)
