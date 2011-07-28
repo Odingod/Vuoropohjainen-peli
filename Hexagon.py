@@ -100,7 +100,14 @@ class Tile(Hexagon, QGraphicsPolygonItem):
         self.setPen(QPen())
     
     def mousePressEvent(self, event):
-        neighbours = [self.map.tiles[n[0]][n[1]] for n in self.getNeighborsI() if n]
+        neighbours = []
+        for n in self.getNeighborsI():
+            if n:
+                try:
+                    neighbours.append(self.map.tiles[n[0]][n[1]])
+                except IndexError:
+                    pass
+
         for row in self.map.tiles:
             for n in row:
                 if n in neighbours:
