@@ -8,6 +8,7 @@ class Game:
         self.map=Map()
         self.numUnits = 1
         self.unitIndex = -1 
+        self.turn = 1
 
     def start(self):
         self.map.createSquareMap(self.numUnits, 10,10,50)
@@ -40,6 +41,7 @@ class Game:
     def nextTurnAction(self):
         self.resetUnitCycle()
         self.nextUnitAction()
+        self.turn += 1
 
 class MainView(QGraphicsView):
     def __init__(self, scene):
@@ -84,7 +86,7 @@ class NewGameDialog(QDialog):
         buttons.accepted.connect(self.accept)
         buttons.rejected.connect(self.reject)
 
-        layout.addRow(self.numUnits)
+        layout.addRow("Number Of Units", self.numUnits)
         layout.addRow(buttons)
         self.setLayout(layout)
 
@@ -95,6 +97,11 @@ class NewGameDialog(QDialog):
 class BottomDock(QDockWidget):
     def __init__(self, parent):
         super(BottomDock, self).__init__(parent)
+
+        self.title = QLabel()
+        self.title.setIndent(20)
+        self.updateTitle()
+        self.setTitleBarWidget(self.title)
 
         layout = QFormLayout()
         self.moveButton = QPushButton("Move")
@@ -118,11 +125,14 @@ class BottomDock(QDockWidget):
         tcLayout.addWidget(self.nextTurnButton)
         turnControlButtonGroupBox.setLayout(tcLayout)
 
-        layout.addRow("Select Action", actionButtonGroupBox)
+        layout.addRow(actionButtonGroupBox)
         layout.addRow(turnControlButtonGroupBox)
         bottomDockWidget = QWidget()
         bottomDockWidget.setLayout(layout)
         self.setWidget(bottomDockWidget)
+
+    def updateTitle(self):
+        self.title.setText("Unit: %d   Turn: %d" % (game.unitIndex + 1, game.turn))
 
     def moveAction(self):
         game.moveAction()
@@ -134,10 +144,12 @@ class BottomDock(QDockWidget):
 
     def nextUnitAction(self):
         game.nextUnitAction()
+        self.updateTitle()
         self.enableButtons()
 
     def nextTurnAction(self):
         game.nextTurnAction()
+        self.updateTitle()
         self.enableButtons()
 
     def disableButtons(self):
@@ -198,5 +210,9 @@ if __name__ == "__main__":
     window = MainWindow()
     window.setWindowTitle("Super peli!")
     window.show()
+
+    # Have to do this manually here, after everything else has been
+    # initialized and shown, or otherwise it won't work
+    game.currentUnit.tile.ensureVisible()
 
     app.exec_()
