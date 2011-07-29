@@ -195,6 +195,7 @@ class Unit(object):
         tiles=self.tile.map.tiles
         self.tile.removeUnit(self)
         tiles[i][j].addUnit(self)
+        self.tile.setChosenWithNeighbours()
         
 class Tank(Unit):
     def __init__(self,tile=None):
