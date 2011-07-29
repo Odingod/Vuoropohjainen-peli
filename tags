@@ -1,0 +1,86 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.8	//
+Game	application.py	/^class Game:$/;"	c
+Ground	Hexagon.py	/^class Ground(Terrain):$/;"	c
+HexaTest	HexaTest.py	/^class HexaTest(QMainWindow):$/;"	c
+Hexagon	HexaTest.py	/^from Hexagon import Hexagon,Map$/;"	i
+Hexagon	Hexagon.py	/^class Hexagon(object):$/;"	c
+Hexagon	application.py	/^from Hexagon import Hexagon, Map$/;"	i
+MainView	application.py	/^class MainView(QGraphicsView):$/;"	c
+MainWindow	application.py	/^class MainWindow(QMainWindow):$/;"	c
+Map	HexaTest.py	/^from Hexagon import Hexagon,Map$/;"	i
+Map	Hexagon.py	/^class Map(object):$/;"	c
+Map	application.py	/^from Hexagon import Hexagon, Map$/;"	i
+NewGameDialog	application.py	/^class NewGameDialog(QDialog):$/;"	c
+QBrush	Hexagon.py	/^from PySide.QtGui import QImage, QMenu, QGraphicsPolygonItem, QPolygon, QBrush, QPen, QPixmap, QGraphicsPixmapItem$/;"	i
+QGraphicsPixmapItem	Hexagon.py	/^from PySide.QtGui import QImage, QMenu, QGraphicsPolygonItem, QPolygon, QBrush, QPen, QPixmap, QGraphicsPixmapItem$/;"	i
+QGraphicsPolygonItem	Hexagon.py	/^from PySide.QtGui import QImage, QMenu, QGraphicsPolygonItem, QPolygon, QBrush, QPen, QPixmap, QGraphicsPixmapItem$/;"	i
+QImage	Hexagon.py	/^from PySide.QtGui import QImage, QMenu, QGraphicsPolygonItem, QPolygon, QBrush, QPen, QPixmap, QGraphicsPixmapItem$/;"	i
+QMenu	Hexagon.py	/^from PySide.QtGui import QImage, QMenu, QGraphicsPolygonItem, QPolygon, QBrush, QPen, QPixmap, QGraphicsPixmapItem$/;"	i
+QPen	Hexagon.py	/^from PySide.QtGui import QImage, QMenu, QGraphicsPolygonItem, QPolygon, QBrush, QPen, QPixmap, QGraphicsPixmapItem$/;"	i
+QPixmap	Hexagon.py	/^from PySide.QtGui import QImage, QMenu, QGraphicsPolygonItem, QPolygon, QBrush, QPen, QPixmap, QGraphicsPixmapItem$/;"	i
+QPoint	Hexagon.py	/^from PySide.QtCore import QRect, QPoint, Qt$/;"	i
+QPolygon	Hexagon.py	/^from PySide.QtGui import QImage, QMenu, QGraphicsPolygonItem, QPolygon, QBrush, QPen, QPixmap, QGraphicsPixmapItem$/;"	i
+QRect	Hexagon.py	/^from PySide.QtCore import QRect, QPoint, Qt$/;"	i
+Qt	Hexagon.py	/^from PySide.QtCore import QRect, QPoint, Qt$/;"	i
+Tank	Hexagon.py	/^class Tank(Unit):$/;"	c
+Terrain	Hexagon.py	/^class Terrain(object):$/;"	c
+Tile	Hexagon.py	/^class Tile(Hexagon, QGraphicsPolygonItem):$/;"	c
+Unit	Hexagon.py	/^class Unit(object):$/;"	c
+Water	Hexagon.py	/^class Water(Terrain):$/;"	c
+__init__	HexaTest.py	/^    def __init__(self):$/;"	m	class:HexaTest
+__init__	Hexagon.py	/^    def __init__(self):$/;"	m	class:Ground
+__init__	Hexagon.py	/^    def __init__(self):$/;"	m	class:Map
+__init__	Hexagon.py	/^    def __init__(self):$/;"	m	class:Water
+__init__	Hexagon.py	/^    def __init__(self,i,j,r,map,terrain=Ground()):$/;"	m	class:Tile
+__init__	Hexagon.py	/^    def __init__(self,i,j,radius=20):$/;"	m	class:Hexagon
+__init__	Hexagon.py	/^    def __init__(self,id,image):$/;"	m	class:Terrain
+__init__	Hexagon.py	/^    def __init__(self,id,image,tile=None):$/;"	m	class:Unit
+__init__	Hexagon.py	/^    def __init__(self,tile=None):$/;"	m	class:Tank
+__init__	application.py	/^    def __init__(self):$/;"	m	class:Game
+__init__	application.py	/^    def __init__(self, game, parent):$/;"	m	class:NewGameDialog
+__init__	application.py	/^    def __init__(self, parent=None):$/;"	m	class:MainWindow
+__init__	application.py	/^    def __init__(self, scene):$/;"	m	class:MainView
+accept	application.py	/^    def accept(self):$/;"	m	class:NewGameDialog
+addUnit	Hexagon.py	/^    def addUnit(self,unit):$/;"	m	class:Tile
+app	HexaTest.py	/^    app=QApplication(sys.argv)$/;"	v	class:HexaTest
+app	application.py	/^    app = QApplication([])$/;"	v	class:MainWindow
+buildMenu	application.py	/^    def buildMenu(self):$/;"	m	class:MainWindow
+choice	Hexagon.py	/^from random import randint, choice$/;"	i
+copysign	Hexagon.py	/^from math import sqrt,floor, copysign$/;"	i
+createSquareMap	Hexagon.py	/^    def createSquareMap(self, numUnits, w=10,h=10,r=20):$/;"	m	class:Map
+distA	Hexagon.py	/^    def distA(self):$/;"	m	class:Tile
+distance	Hexagon.py	/^    def distance(self,i,j):$/;"	m	class:Tile
+floor	Hexagon.py	/^from math import sqrt,floor, copysign$/;"	i
+getContextMenu	Hexagon.py	/^    def getContextMenu(self):$/;"	m	class:Tile
+getHexAt	Hexagon.py	/^    def getHexAt(self,x,y):$/;"	m	class:Map
+getImageRect	Hexagon.py	/^    def getImageRect(self):$/;"	m	class:Hexagon
+getNeighborI	Hexagon.py	/^    def getNeighborI(self,number):$/;"	m	class:Hexagon
+getNeighborsI	Hexagon.py	/^    def getNeighborsI(self):$/;"	m	class:Hexagon
+mouseMoveEvent	application.py	/^    def mouseMoveEvent(self, event):$/;"	m	class:MainView
+mousePressEvent	HexaTest.py	/^    def mousePressEvent(self, event):$/;"	m	class:HexaTest
+mousePressEvent	Hexagon.py	/^    def mousePressEvent(self, event):$/;"	m	class:Tile
+mousePressEvent	application.py	/^    def mousePressEvent(self, event):$/;"	m	class:MainView
+mouseReleaseEvent	application.py	/^    def mouseReleaseEvent(self, event):$/;"	m	class:MainView
+move	Hexagon.py	/^    def move(self,i,j):$/;"	m	class:Tank
+move	Hexagon.py	/^    def move(self,i,j):$/;"	m	class:Unit
+moveAction	Hexagon.py	/^    def moveAction(self):$/;"	m	class:Tile
+moveUnit	Hexagon.py	/^    def moveUnit(self,i,j):$/;"	m	class:Tile
+neighbor_di	Hexagon.py	/^    neighbor_di=(0, 1, 1, 0, -1, -1)$/;"	v	class:Hexagon
+neighbor_dj	Hexagon.py	/^    neighbor_dj=((-1, -1, 0, 1, 0, -1),(-1, 0, 1, 1, 1, 0 ))$/;"	v	class:Hexagon
+newGame	application.py	/^    def newGame(self):$/;"	m	class:MainWindow
+paintEvent	HexaTest.py	/^    def paintEvent(self, paintevent):$/;"	m	class:HexaTest
+partial	Hexagon.py	/^from functools import partial$/;"	i
+randint	Hexagon.py	/^from random import randint, choice$/;"	i
+removeUnit	Hexagon.py	/^    def removeUnit(self,unit):$/;"	m	class:Tile
+setChosen	Hexagon.py	/^    def setChosen(self, ch):$/;"	m	class:Tile
+sqrt	Hexagon.py	/^from math import sqrt,floor, copysign$/;"	i
+start	application.py	/^    def start(self):$/;"	m	class:Game
+sys	HexaTest.py	/^import sys$/;"	i
+tellClick	Hexagon.py	/^    def tellClick(self,i,j):$/;"	m	class:Map
+test	HexaTest.py	/^    test=HexaTest()$/;"	v	class:HexaTest
+window	application.py	/^    window = MainWindow()$/;"	v	class:MainWindow

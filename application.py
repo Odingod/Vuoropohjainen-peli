@@ -7,9 +7,21 @@ class Game:
     def __init__(self):
         self.map=Map()
         self.numUnits = 1
+        self.unitIndex = -1 
 
     def start(self):
         self.map.createSquareMap(self.numUnits, 10,10,50)
+
+    def cycleUnits(self):
+        self.unitIndex += 1
+        if self.unitIndex == self.numUnits:
+            self.unitIndex = -1 
+            return None
+        else:
+            return self.map.units[self.unitIndex]
+    
+    def resetUnitCycle(self):
+        self.unitIndex = -1
 
 class MainView(QGraphicsView):
     def __init__(self, scene):
@@ -49,7 +61,7 @@ class NewGameDialog(QDialog):
         layout = QFormLayout()
         self.numUnits = QSpinBox()
         self.numUnits.setRange(1, 15)
-        self.numUnits.setValue(1)
+        self.numUnits.setValue(5)
         buttons = QDialogButtonBox(QDialogButtonBox.Ok | \
             QDialogButtonBox.Cancel)
         buttons.accepted.connect(self.accept)
@@ -66,8 +78,9 @@ class NewGameDialog(QDialog):
 class MainWindow(QMainWindow):
     def __init__(self, parent=None):
         super(MainWindow, self).__init__(parent)
-        self.buildMenu()
         self.newGame()
+        self.buildMenu()
+        self.buildBottomDock()
 
     def buildMenu(self):
         # Game menu actions
@@ -82,6 +95,59 @@ class MainWindow(QMainWindow):
         gameMenu = self.menuBar().addMenu("&Game")
         gameMenu.addAction(newGameAct)
         gameMenu.addAction(quitAct)
+
+    def buildBottomDock(self):
+        self.bottomDock = QDockWidget(self)
+        self.bottomDock.setFeatures(QDockWidget.NoDockWidgetFeatures)
+        layout = QFormLayout()
+        moveButton = QPushButton("Move")
+        distButton = QPushButton("Dist")
+        nextUnitButton = QPushButton("Next Unit")
+        nextTurnButton= QPushButton("Next Turn")
+        moveButton.clicked.connect(self.moveAction)
+        distButton.clicked.connect(self.distAction)
+        nextUnitButton.clicked.connect(self.nextUnitAction)
+        nextTurnButton.clicked.connect(self.nextTurnAction)
+
+        actionButtonGroupBox = QGroupBox()
+        abLayout = QHBoxLayout()
+        abLayout.addWidget(moveButton)
+        abLayout.addWidget(distButton)
+        actionButtonGroupBox.setLayout(abLayout)
+
+        turnControlButtonGroupBox = QGroupBox()
+        tcLayout = QHBoxLayout()
+        tcLayout.addWidget(nextUnitButton)
+        tcLayout.addWidget(nextTurnButton)
+        turnControlButtonGroupBox.setLayout(tcLayout)
+
+        layout.addRow("Select Action", actionButtonGroupBox)
+        layout.addRow(turnControlButtonGroupBox)
+        bottomDockWidget = QWidget()
+        bottomDockWidget.setLayout(layout)
+        self.bottomDock.setWidget(bottomDockWidget)
+        self.addDockWidget(Qt.BottomDockWidgetArea, self.bottomDock)
+
+    def moveAction(self):
+        self.game.map.addAction(self.currentUnit.move)
+        self.game.map.addAction(self.nextUnitAction)
+
+    def distAction(self):
+        self.game.map.addAction(self.currentUnit.tile.distance)
+        self.game.map.addAction(self.nextUnitAction)
+
+    def nextUnitAction(self, *args):
+        self.currentUnit = self.game.cycleUnits()
+        if self.currentUnit:
+            self.currentUnit.tile.setChosenWithNeighbours()
+            self.mainView.ensureVisible(self.currentUnit.tile)
+        else:
+            self.nextTurnAction()
+
+
+    def nextTurnAction(self):
+        self.game.resetUnitCycle()
+        self.nextUnitAction()
 
     def newGame(self):
         self.mainScene = QGraphicsScene()
@@ -98,7 +164,7 @@ class MainWindow(QMainWindow):
 
         self.setCentralWidget(self.mainView)
         self.mainView.show()
-        self.mainView.centerOn(self.mainScene.sceneRect().center())
+        self.nextUnitAction()
 
 if __name__ == "__main__":
     app = QApplication([])

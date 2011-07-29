@@ -38,14 +38,12 @@ class Hexagon(object):
     def getImageRect(self):
         return QRect((QPoint(*self.corners[0])+QPoint(*self.corners[5]))/2,(QPoint(*self.corners[2])+QPoint(*self.corners[3]))/2)
         
-
-
-
 class Map(object):
     def __init__(self):
         self.tiles=[]
         self.metrics=Hexagon(-1,-1)
         self.waitingInput=[]
+        self.units = []
     
     def createSquareMap(self, numUnits, w=10,h=10,r=20):
         self.metrics=Hexagon(-1,-1,r)
@@ -59,7 +57,9 @@ class Map(object):
                 row = choice(self.tiles)
                 tile = choice(row)
                 if tile.terrain.canHoldUnit and not tile.units:
-                    tile.addUnit(Tank())
+                    unit = Tank()
+                    tile.addUnit(unit)
+                    self.units.append(unit)
                     break
     
     def getHexAt(self,x,y):
@@ -77,7 +77,10 @@ class Map(object):
         if self.waitingInput:
             for action in self.waitingInput:
                 action(i,j)
-                self.waitingInput.remove(action)
+            self.waitingInput = []
+
+    def addAction(self, action):
+        self.waitingInput.append(action)
     
 class Terrain(object):
     def __init__(self,id,image):
@@ -109,49 +112,9 @@ class Tile(Hexagon, QGraphicsPolygonItem):
         self.setPen(QPen())
     
     def mousePressEvent(self, event):
-        neighbours = []
-        for n in self.getNeighborsI():
-            if n:
-                try:
-                    neighbours.append(self.map.tiles[n[0]][n[1]])
-                except IndexError:
-                    pass
-
-        for row in self.map.tiles:
-            for n in row:
-                if n in neighbours:
-                    n.setChosen(True)
-                else:
-                    n.setChosen(False)
-        self.setChosen(True)
-
-        if event.button() == Qt.RightButton:
-            menu = self.getContextMenu()
-            menu.exec_(event.screenPos())
-            self.ungrabMouse()
-        elif event.button() == Qt.LeftButton:
-            self.map.tellClick(self.i, self.j)
-
+        self.map.tellClick(self.i, self.j)
         self.scene().update()
         
-    def getContextMenu(self):
-        menu = QMenu()
-        if self.units:
-            menu.addAction('Move').triggered.connect(self.moveAction)
-        
-        menu.addAction('Dist').triggered.connect(self.distA)
-        menu.addAction('Cancel')
-        return menu
-
-    def distA(self):
-        self.map.waitingInput.append(self.distance)
-        
-    def moveAction(self):
-        self.map.waitingInput.append(self.moveUnit)
-    
-    def moveUnit(self,i,j):
-        self.units[0].move(i,j)
-    
     def distance(self,i,j):
         di=-(i-self.i)
         dj=j-self.j
@@ -167,6 +130,22 @@ class Tile(Hexagon, QGraphicsPolygonItem):
         else:
             self.setPen(QPen())
 
+    def setChosenWithNeighbours(self):
+        neighbours = []
+        for n in self.getNeighborsI():
+            if n:
+                try:
+                    neighbours.append(self.map.tiles[n[0]][n[1]])
+                except IndexError:
+                    pass
+
+        for row in self.map.tiles:
+            for n in row:
+                if n in neighbours:
+                    n.setChosen(True)
+                else:
+                    n.setChosen(False)
+        self.setChosen(True)
     
     def addUnit(self,unit):
         unit.tile=self
