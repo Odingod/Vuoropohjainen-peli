@@ -61,6 +61,7 @@ class Map(object):
                     tile.addUnit(unit)
                     self.units.append(unit)
                     break
+
     
     def getHexAt(self,x,y):
         i_t=x/self.metrics.s
@@ -116,11 +117,32 @@ class Tile(Hexagon, QGraphicsPolygonItem):
         self.scene().update()
         
     def distance(self,i,j):
-        di=-(i-self.i)
+        di=i-self.i
         dj=j-self.j
-        dist = abs(di) + abs(dj) - abs(di)%2;
-        print 'Distance is '+str(dist)
+        dist = int(round(abs(di)/2.)) + abs(dj)
+        tempj,tempi=abs(dj),abs(di)
+        dist=0
         
+        dist-=(i+self.i)%2
+        print (di,dj,tempi,tempj)
+        while tempi > 0:
+            dist+=1
+            tempi-=1
+            tempj-=tempi%2
+            
+            #print (tempi,tempj)
+        while tempj > 0 or tempi > 0:
+            dist+=1
+            tempj-=1
+            #print (tempi,tempj)
+        if dj==0 or di==0:
+            dist = max(abs(dj),abs(di))
+                
+        print 'dist: '+ str(dist)
+        if dj==0:
+            dist=abs(di)
+        #print 'Distance is '+str(dist)+' di: '+str(di) +' dj: '+str(dj)
+    
     def setChosen(self, ch):
         self.chosen = ch
         if ch:
