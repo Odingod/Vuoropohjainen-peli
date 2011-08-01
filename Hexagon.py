@@ -50,7 +50,7 @@ class Map(object):
         for i in xrange(w):
             self.tiles.append([])
             for j in xrange(h):
-                self.tiles[i].append(Tile(i,j,r,self,Ground() if randint(1,10)< 10 else Water()))
+                self.tiles[i].append(Tile(i,j,r,self,Ground() if randint(1,10)< 9 else Water()))
         for i in xrange(numUnits):
             while True:
                 #tile = choice(choice(self.tiles))
@@ -76,12 +76,19 @@ class Map(object):
     
     def tellClick(self,i,j):
         if self.waitingInput:
-            for action in self.waitingInput:
+            temp=self.waitingInput
+            self.waitingInput=[]
+            for action in temp:
                 action(i,j)
-            self.waitingInput = []
+            
 
     def addAction(self, action):
         self.waitingInput.append(action)
+        
+    
+    
+
+ 
     
 class Terrain(object):
     def __init__(self,id,image):
@@ -113,35 +120,64 @@ class Tile(Hexagon, QGraphicsPolygonItem):
         self.setPen(QPen())
     
     def mousePressEvent(self, event):
-        self.map.tellClick(self.i, self.j)
-        self.scene().update()
+        if event.button() == Qt.LeftButton:
+            self.map.tellClick(self.i, self.j)
+            #self.setChosenByDist((5,))
+            self.scene().update()
+        if event.button() == Qt.RightButton:
+            self.getContextMenu().exec_(event.screenPos())
+            self.ungrabMouse()
+    
+    def getContextMenu(self):       
+        menu = QMenu()
+        menu.addAction('Dist').triggered.connect(self.distAction)
+        menu.addAction('Info').triggered.connect(self.info)
+        return menu
+    
+    def info(self):
+        if isinstance(self.terrain, Ground):
+            info = 'Some dirt'
+        elif isinstance(self.terrain, Water):
+            info = 'There is some sparkling water'
+        if self.units:
+            info += ' and a tank with ' + str(self.units[0].hp) + ' health.'
+        print info
+    
+    def distAction(self):
+        self.map.addAction(partial(self.distance,out=True))
         
-    def distance(self,i,j):
+    def distance(self,i,j,out=False):
         di=i-self.i
         dj=j-self.j
-        dist = int(round(abs(di)/2.)) + abs(dj)
-        tempj,tempi=abs(dj),abs(di)
         dist=0
-        
-        dist-=(i+self.i)%2
-        print (di,dj,tempi,tempj)
-        while tempi > 0:
-            dist+=1
-            tempi-=1
-            tempj-=tempi%2
-            
-            #print (tempi,tempj)
-        while tempj > 0 or tempi > 0:
-            dist+=1
-            tempj-=1
-            #print (tempi,tempj)
         if dj==0 or di==0:
             dist = max(abs(dj),abs(di))
+            if out:
+                print 'dist: '+ str(dist)
+            return dist
+        startj,starti=max((j,i),(self.j,self.i))
+        endj,endi=min((j,i),(self.j,self.i))
+        if starti > endi:
+            while starti > endi:
+                dist += 1
+                starti -= 1
+                startj -= starti%2
+            while startj>endj:
+                dist += 1
+                startj -= 1
+        else:
+            while starti < endi:
+                dist += 1
+                starti += 1
+                startj -= starti%2
+            while startj>endj:
+                dist += 1
+                startj -= 1
+        if out:
+            print 'dist: '+ str(dist)
+        return dist
                 
-        print 'dist: '+ str(dist)
-        if dj==0:
-            dist=abs(di)
-        #print 'Distance is '+str(dist)+' di: '+str(di) +' dj: '+str(dj)
+        
     
     def setChosen(self, ch):
         self.chosen = ch
@@ -153,21 +189,17 @@ class Tile(Hexagon, QGraphicsPolygonItem):
             self.setPen(QPen())
 
     def setChosenWithNeighbours(self):
-        neighbours = []
-        for n in self.getNeighborsI():
-            if n:
-                try:
-                    neighbours.append(self.map.tiles[n[0]][n[1]])
-                except IndexError:
-                    pass
-
+        self.setChosenByDist(1)
+    
+    def setChosenByDist(self,dist):
+        if not isinstance(dist, tuple):
+            dist=(dist,)
         for row in self.map.tiles:
-            for n in row:
-                if n in neighbours:
-                    n.setChosen(True)
+            for hex in row:
+                if hex.distance(self.i,self.j) in dist:
+                    hex.setChosen(True)
                 else:
-                    n.setChosen(False)
-        self.setChosen(True)
+                    hex.setChosen(False)
     
     def addUnit(self,unit):
         unit.tile=self
@@ -186,24 +218,31 @@ class Tile(Hexagon, QGraphicsPolygonItem):
             pass
         
 class Unit(object):
-    def __init__(self,id,image,tile=None):
+    def __init__(self,id,image,tile=None,moves=(1,),hp=30):
         self.id=id
         self.image=image
         self.tile=tile
+        self.moves=moves
+        self.hp=hp
     
     def move(self,i,j):
         tiles=self.tile.map.tiles
         self.tile.removeUnit(self)
         tiles[i][j].addUnit(self)
-        self.tile.setChosenWithNeighbours()
+        #self.tile.setChosenWithNeighbours()
+        self.tile.setChosenByDist(-1)
         
 class Tank(Unit):
     def __init__(self,tile=None):
-        Unit.__init__(self, 'tank', QImage('alien1.gif'), tile)
+        Unit.__init__(self, 'tank', QImage('alien1.gif'), tile,(1,2),25)
     
     def move(self,i,j):
-        if self.tile.map.tiles[i][j].terrain.canHoldUnit:
+        if not self.tile.map.tiles[i][j].chosen:
+            print 'You can\'t move that far'
+            self.tile.map.addAction(self.move)
+        elif self.tile.map.tiles[i][j].terrain.canHoldUnit:
             super(Tank,self).move(i,j)
         else:
             print 'Tanks can\'t go there'
+            self.tile.map.addAction(self.move)
         

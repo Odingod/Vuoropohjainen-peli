@@ -25,15 +25,13 @@ class Game:
         self.unitIndex = -1
 
     def moveAction(self):
+        self.currentUnit.tile.setChosenByDist(self.currentUnit.moves)
         self.map.addAction(self.currentUnit.move)
-
-    def distAction(self):
-        self.map.addAction(self.currentUnit.tile.distance)
 
     def nextUnitAction(self, *args):
         self.cycleUnits()
         if self.currentUnit:
-            self.currentUnit.tile.setChosenWithNeighbours()
+            self.currentUnit.tile.setChosen(True)
             self.currentUnit.tile.ensureVisible()
         else:
             self.nextTurnAction()
@@ -52,6 +50,7 @@ class MainView(QGraphicsView):
             self.dragPos = event.globalPos()
             self.dragPossible = True
             self.dragging = False
+        
         super(MainView, self).mousePressEvent(event)
 
     def mouseReleaseEvent(self, event):
@@ -80,7 +79,7 @@ class NewGameDialog(QDialog):
         layout = QFormLayout()
         self.numUnits = QSpinBox()
         self.numUnits.setRange(1, 15)
-        self.numUnits.setValue(5)
+        self.numUnits.setValue(1)
         buttons = QDialogButtonBox(QDialogButtonBox.Ok | \
             QDialogButtonBox.Cancel)
         buttons.accepted.connect(self.accept)
