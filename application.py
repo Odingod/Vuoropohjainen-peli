@@ -1,45 +1,77 @@
 #!/usr/bin/env python
 from PySide.QtCore import *
 from PySide.QtGui import *
-from Hexagon import Hexagon, Map
+from Hexagon import Hexagon
+from Map import Map
+from Players import HumanPlayer, AIPlayer
+import sys
 
 class Game:
     def __init__(self):
         self.map=Map()
         self.numUnits = 1
-        self.unitIndex = -1 
+        self.numPlayers = 1
+        self.playerIndex = -1 
         self.turn = 1
+        self.players = []
 
     def start(self):
-        self.map.createSquareMap(self.numUnits, 10,10,50)
-
-    def cycleUnits(self):
-        self.unitIndex += 1
-        if self.unitIndex == self.numUnits:
+        self.players.append(HumanPlayer(self))
+        for x in xrange(self.numPlayers-1):
+            self.players.append(AIPlayer(self))
+        self.map.createSquareMap(self.numUnits, self.players, 10,10,50)
+        self.numUnits*=self.numPlayers
+        self.cyclePlayers()
+        
+    def cyclePlayers(self):
+        self.playerIndex += 1
+        if self.playerIndex == self.numPlayers:
             self.unitIndex = -1 
-            self.currentUnit = None
+            self.currentPlayer = None
+            print 'curretn none'
         else:
-            self.currentUnit = self.map.units[self.unitIndex]
+            self.currentPlayer = self.players[self.playerIndex]
     
-    def resetUnitCycle(self):
-        self.unitIndex = -1
-
-    def moveAction(self):
-        self.currentUnit.tile.setChosenByDist(self.currentUnit.moves)
-        self.map.addAction(self.currentUnit.move)
-
-    def nextUnitAction(self, *args):
-        self.cycleUnits()
-        if self.currentUnit:
-            self.currentUnit.tile.setChosen(True)
-            self.currentUnit.tile.ensureVisible()
+    
+    
+    def nextPlayerAction(self):
+        self.cyclePlayers()
+        if self.currentPlayer:
+            self.currentPlayer.doTurn()
         else:
-            self.nextTurnAction()
-
-    def nextTurnAction(self):
-        self.resetUnitCycle()
-        self.nextUnitAction()
+            self.nextTurn()
+    
+    def nextTurn(self):
+        self.resetPlayerCycle()
+        self.nextPlayerAction()
         self.turn += 1
+        print self.turn
+    
+    def resetPlayerCycle(self):
+        self.playerIndex = -1
+    
+    def moveAction(self):
+        if isinstance(self.currentPlayer, HumanPlayer):
+            self.currentPlayer.currentUnit.tile.setChosenByDist(self.currentPlayer.currentUnit.moves)
+            self.map.addAction(self.currentPlayer.currentUnit.move)
+            return True
+        return False
+    
+    def nextUnitAction(self):
+        if isinstance(self.currentPlayer, HumanPlayer):
+            self.currentPlayer.nextUnitAction()
+            return True
+        return False
+    
+    def nextTurnAction(self):
+        if isinstance(self.currentPlayer, HumanPlayer):
+            self.currentPlayer.endTurn()
+            return True
+        return False
+
+
+    
+        
 
 class MainView(QGraphicsView):
     def __init__(self, scene):
@@ -80,17 +112,24 @@ class NewGameDialog(QDialog):
         self.numUnits = QSpinBox()
         self.numUnits.setRange(1, 15)
         self.numUnits.setValue(1)
+        self.numPlayers = QSpinBox()
+        self.numPlayers.setRange(1, 4)
+        self.numPlayers.setValue(1)
+        
+        
         buttons = QDialogButtonBox(QDialogButtonBox.Ok | \
             QDialogButtonBox.Cancel)
         buttons.accepted.connect(self.accept)
         buttons.rejected.connect(self.reject)
 
         layout.addRow("Number Of Units", self.numUnits)
+        layout.addRow("Number Of Players", self.numPlayers)
         layout.addRow(buttons)
         self.setLayout(layout)
 
     def accept(self):
         game.numUnits = self.numUnits.value()
+        game.numPlayers = self.numPlayers.value()
         super(NewGameDialog, self).accept()
 
 class BottomDock(QDockWidget):
@@ -104,11 +143,11 @@ class BottomDock(QDockWidget):
 
         layout = QFormLayout()
         self.moveButton = QPushButton("Move")
-        self.distButton = QPushButton("Dist")
+        self.distButton = QPushButton("Pass")
         self.nextUnitButton = QPushButton("Next Unit")
         self.nextTurnButton= QPushButton("Next Turn")
         self.moveButton.clicked.connect(self.moveAction)
-        self.distButton.clicked.connect(self.distAction)
+        self.distButton.clicked.connect(self.nextUnitAction)
         self.nextUnitButton.clicked.connect(self.nextUnitAction)
         self.nextTurnButton.clicked.connect(self.nextTurnAction)
 
@@ -131,25 +170,23 @@ class BottomDock(QDockWidget):
         self.setWidget(bottomDockWidget)
 
     def updateTitle(self):
-        self.title.setText("Unit: %d   Turn: %d" % (game.unitIndex + 1, game.turn))
+        self.title.setText("Unit: %d   Turn: %d" % (game.currentPlayer.unitIndex + 1, game.turn))
 
     def moveAction(self):
-        game.moveAction()
-        self.disableButtons()
-
-    def distAction(self):
-        game.distAction()
-        self.disableButtons()
+        self.updateTitle()
+        if game.moveAction():
+            pass
+            #self.disableButtons()
 
     def nextUnitAction(self):
-        game.nextUnitAction()
-        self.updateTitle()
-        self.enableButtons()
+        if game.nextUnitAction():
+            self.updateTitle()
+            self.enableButtons()
 
     def nextTurnAction(self):
-        game.nextTurnAction()
-        self.updateTitle()
-        self.enableButtons()
+        if game.nextTurnAction():
+            self.updateTitle()
+            self.enableButtons()
 
     def disableButtons(self):
         self.moveButton.setEnabled(False)
@@ -193,15 +230,16 @@ class MainWindow(QMainWindow):
         newGameDialog = NewGameDialog(self)
         r = newGameDialog.exec_()
 
-        if r == QDialog.Rejected:
+        if r == 0:
             self.close()
+            sys.exit()
 
         game.start()
         [[self.mainScene.addItem(hex) for hex in row] for row in game.map.tiles]
 
         self.setCentralWidget(self.mainView)
         self.mainView.show()
-        game.nextUnitAction()
+        game.nextPlayerAction()
 
 if __name__ == "__main__":
     app = QApplication([])
@@ -212,6 +250,7 @@ if __name__ == "__main__":
 
     # Have to do this manually here, after everything else has been
     # initialized and shown, or otherwise it won't work
-    game.currentUnit.tile.ensureVisible()
+    #game.currentUnit.tile.ensureVisible()
+    #What's this^? works fine without it
 
     app.exec_()
