@@ -1,3 +1,5 @@
+from Units import Unit
+
 class Player:
     def __init__(self,game):
         self.myTurn=False
@@ -9,18 +11,6 @@ class Player:
     
     def endTurn(self):
         self.game.nextPlayerAction()
-        
-class HumanPlayer(Player):
-    def __init__(self,game):
-        Player.__init__(self,game)
-        self.unitIndex = -1
-        self.currentUnit = None
-    
-    def doTurn(self):
-        Player.doTurn(self)
-        self.unitIndex=-1
-        self.nextUnitAction()
-        
     
     def cycleUnits(self):
         try:
@@ -35,6 +25,20 @@ class HumanPlayer(Player):
             self.cycleUnits()
         else:
             self.currentUnit = self.game.map.units[self.unitIndex]
+        
+class HumanPlayer(Player):
+    def __init__(self,game):
+        Player.__init__(self,game)
+        self.unitIndex = -1
+        self.currentUnit = None
+    
+    def doTurn(self):
+        Player.doTurn(self)
+        self.unitIndex=-1
+        self.nextUnitAction()
+        
+    
+
     
     def nextUnitAction(self, *args):
         self.cycleUnits()
@@ -54,4 +58,14 @@ class AIPlayer(Player):
         Player.__init__(self,game)
     
     def doTurn(self):
+        self.unitIndex = -1
+        self.cycleUnits()
+        neighboring=self.currentUnit.tile.getNeighborsI()
+        for neighbour in neighboring:
+            try:
+                if self.currentUnit.tile.map.tiles[neighbour[0]][neighbour[1]].terrain.canHoldUnit:
+                    Unit.move(self.currentUnit,neighbour[0],neighbour[1])
+                    break
+            except (IndexError, TypeError):
+                pass
         self.endTurn()
