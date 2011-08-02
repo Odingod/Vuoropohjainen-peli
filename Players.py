@@ -34,14 +34,13 @@ class HumanPlayer(Player):
         elif self.game.map.units[self.unitIndex].owner != self:
             self.cycleUnits()
         else:
-            print 'found unit'
             self.currentUnit = self.game.map.units[self.unitIndex]
     
     def nextUnitAction(self, *args):
         self.cycleUnits()
         if self.currentUnit:
             self.currentUnit.tile.setChosen(True)
-            self.currentUnit.tile.ensureVisible()
+            #self.currentUnit.tile.ensureVisible()
         else:
             self.endTurn()
     

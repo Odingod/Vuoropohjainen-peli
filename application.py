@@ -4,6 +4,7 @@ from PySide.QtGui import *
 from Hexagon import Hexagon
 from Map import Map
 from Players import HumanPlayer, AIPlayer
+from functools import partial
 import sys
 
 class Game:
@@ -21,14 +22,12 @@ class Game:
             self.players.append(AIPlayer(self))
         self.map.createSquareMap(self.numUnits, self.players, 10,10,50)
         self.numUnits*=self.numPlayers
-        self.cyclePlayers()
         
     def cyclePlayers(self):
         self.playerIndex += 1
         if self.playerIndex == self.numPlayers:
             self.unitIndex = -1 
             self.currentPlayer = None
-            print 'curretn none'
         else:
             self.currentPlayer = self.players[self.playerIndex]
     
@@ -39,21 +38,22 @@ class Game:
         if self.currentPlayer:
             self.currentPlayer.doTurn()
         else:
+            print 'no plr'
             self.nextTurn()
     
     def nextTurn(self):
         self.resetPlayerCycle()
         self.nextPlayerAction()
         self.turn += 1
-        print self.turn
+
     
     def resetPlayerCycle(self):
         self.playerIndex = -1
     
-    def moveAction(self):
+    def moveAction(self,fun):
         if isinstance(self.currentPlayer, HumanPlayer):
             self.currentPlayer.currentUnit.tile.setChosenByDist(self.currentPlayer.currentUnit.moves)
-            self.map.addAction(self.currentPlayer.currentUnit.move)
+            self.map.addAction(partial(self.currentPlayer.currentUnit.move,fun))
             return True
         return False
     
@@ -174,7 +174,7 @@ class BottomDock(QDockWidget):
 
     def moveAction(self):
         self.updateTitle()
-        if game.moveAction():
+        if game.moveAction(self.updateTitle):
             pass
             #self.disableButtons()
 
@@ -251,6 +251,6 @@ if __name__ == "__main__":
     # Have to do this manually here, after everything else has been
     # initialized and shown, or otherwise it won't work
     #game.currentUnit.tile.ensureVisible()
-    #What's this^? works fine without it
+    # What's this^? works fine without it
 
     app.exec_()
