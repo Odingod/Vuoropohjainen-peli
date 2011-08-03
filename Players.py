@@ -60,12 +60,14 @@ class AIPlayer(Player):
     def doTurn(self):
         self.unitIndex = -1
         self.cycleUnits()
-        neighboring=self.currentUnit.tile.getNeighborsI()
-        for neighbour in neighboring:
-            try:
-                if self.currentUnit.tile.map.tiles[neighbour[0]][neighbour[1]].terrain.canHoldUnit:
-                    Unit.move(self.currentUnit,neighbour[0],neighbour[1])
-                    break
-            except (IndexError, TypeError):
-                pass
+        while self.currentUnit:
+            neighboring=self.currentUnit.tile.getNeighborsI()
+            for neighbour in neighboring:
+                try:
+                    if self.currentUnit.tile.map.tiles[neighbour[0]][neighbour[1]].terrain.canHoldUnit:
+                        Unit.move(self.currentUnit,neighbour[0],neighbour[1])
+                        break
+                except (IndexError, TypeError):
+                    pass
+            self.cycleUnits()
         self.endTurn()

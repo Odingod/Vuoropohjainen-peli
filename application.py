@@ -1,4 +1,29 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
+'''
+projekti-ideoita:
+pienempiä
+-kartan lataus/tallennus
+-kartan generointi
+-fog of war (karttaa pitää tutkia)
+-lisää yksiköitä ja maastoja
+-useampi taso karttaan (korkeuseroja)
+-valikot riippuvat yksiköstä
+-kartassa korkeuseroja
+-pilvet, savu, ym. omassa tasossaan (scrollailee vähän eri tahtiin kuin maa, helppo 'melkein 3D' efekti) 
+
+suurempia
+
+-taistelut (hankaluus riippuu miten totetutetaan, jos vain verrataan kahta lukua helppo, jos vaaditaan jotenkin pelaajan inputtia hankalampi
+-resursseja/niiden kerääjiä
+-teknologia kehitys
+-animaatiot (liikkuminen, räjähdykset, ym.)
+-valikkojärjestelmän rankempi virittely
+
+
+
+
+'''
 from PySide.QtCore import *
 from PySide.QtGui import *
 from Hexagon import Hexagon
@@ -102,7 +127,7 @@ class MainView(QGraphicsView):
                 self.horizontalScrollBar().setValue(self.horizontalScrollBar().value() + dx)
                 self.verticalScrollBar().triggerAction(QAbstractSlider.SliderMove)
                 self.horizontalScrollBar().triggerAction(QAbstractSlider.SliderMove)
-            elif (self.dragPos - event.globalPos()).manhattanLength() < QApplication.startDragDistance():
+            elif (self.dragPos - event.globalPos()).manhattanLength() > QApplication.startDragDistance():
                 self.dragging = True
 
 class NewGameDialog(QDialog):
