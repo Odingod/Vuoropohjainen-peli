@@ -1,4 +1,5 @@
 from PySide.QtGui import QImage
+from PySide.QtCore import QCoreApplication
 
 class Unit(object):
     def __init__(self,id,image,tile=None,moves=(0,1),hp=30,owner=None):
@@ -15,6 +16,9 @@ class Unit(object):
         tiles[i][j].addUnit(self)
         #self.tile.setChosenWithNeighbours()
         self.tile.setChosenByDist(-1)
+        self.tile.ensureVisible()
+        QCoreApplication.instance().processEvents()
+
         
 class Tank(Unit):
     def __init__(self,tile=None,owner=None):
@@ -26,9 +30,9 @@ class Tank(Unit):
             self.tile.map.addAction(self.move)
         elif self.tile.map.tiles[i][j].terrain.canHoldUnit:
             super(Tank,self).move(i,j)
-            self.owner.nextUnitAction()
             if fun:
                 fun()
+            self.owner.nextUnitAction()
         else:
             print 'Tanks can\'t go there'
             self.tile.map.addAction(self.move)

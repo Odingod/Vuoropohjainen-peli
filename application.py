@@ -3,25 +3,22 @@
 '''
 projekti-ideoita:
 pienempiä
--kartan lataus/tallennus
+-kartan/pelin lataus/tallennus
 -kartan generointi
 -fog of war (karttaa pitää tutkia)
 -lisää yksiköitä ja maastoja
 -useampi taso karttaan (korkeuseroja)
--valikot riippuvat yksiköstä
+-valikot riippuvat nykyisestä yksiköstä
 -kartassa korkeuseroja
 -pilvet, savu, ym. omassa tasossaan (scrollailee vähän eri tahtiin kuin maa, helppo 'melkein 3D' efekti) 
 
 suurempia
 
--taistelut (hankaluus riippuu miten totetutetaan, jos vain verrataan kahta lukua helppo, jos vaaditaan jotenkin pelaajan inputtia hankalampi
+-taistelut (hankaluus riippuu miten totetutetaan, jos vain verrataan kahta lukua helppo, jos vaaditaan jotenkin pelaajan inputtia hankalampi)
 -resursseja/niiden kerääjiä
--teknologia kehitys
+-teknologiakehitys
 -animaatiot (liikkuminen, räjähdykset, ym.)
 -valikkojärjestelmän rankempi virittely
-
-
-
 
 '''
 from PySide.QtCore import *
@@ -51,7 +48,7 @@ class Game:
     def cyclePlayers(self):
         self.playerIndex += 1
         if self.playerIndex == self.numPlayers:
-            self.unitIndex = -1 
+            self.playerIndex = -1 
             self.currentPlayer = None
         else:
             self.currentPlayer = self.players[self.playerIndex]
@@ -63,7 +60,6 @@ class Game:
         if self.currentPlayer:
             self.currentPlayer.doTurn()
         else:
-            print 'no plr'
             self.nextTurn()
     
     def nextTurn(self):
@@ -195,7 +191,7 @@ class BottomDock(QDockWidget):
         self.setWidget(bottomDockWidget)
 
     def updateTitle(self):
-        self.title.setText("Unit: %d   Turn: %d" % (game.currentPlayer.unitIndex + 1, game.turn))
+        self.title.setText("Unit: %d   Turn: %d" % (game.currentPlayer.printableUnitIndex, game.turn))
 
     def moveAction(self):
         self.updateTitle()
