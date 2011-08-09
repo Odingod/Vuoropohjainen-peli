@@ -32,7 +32,7 @@ import sys
 
 class Game:
     def __init__(self):
-        self.map=Map()
+        self.map = Map()
         self.numUnits = 1
         self.numPlayers = 1
         self.playerIndex = -1 
@@ -41,10 +41,10 @@ class Game:
 
     def start(self):
         self.players.append(HumanPlayer(self))
-        for x in xrange(self.numPlayers-1):
+        for x in xrange(self.numPlayers - 1):
             self.players.append(AIPlayer(self))
-        self.map.createSquareMap(self.numUnits, self.players, 10,10,50)
-        self.numUnits*=self.numPlayers
+        self.map.createSquareMap(self.numUnits, self.players, 10, 10, 50)
+        self.numUnits *= self.numPlayers
         
     def cyclePlayers(self):
         self.playerIndex += 1
@@ -72,10 +72,10 @@ class Game:
     def resetPlayerCycle(self):
         self.playerIndex = -1
     
-    def moveAction(self,fun):
+    def moveAction(self, fun):
         if isinstance(self.currentPlayer, HumanPlayer):
             self.currentPlayer.currentUnit.tile.setChosenByDist(self.currentPlayer.currentUnit.moves)
-            self.map.addAction(partial(self.currentPlayer.currentUnit.move,fun=fun))
+            self.map.addAction(partial(self.currentPlayer.currentUnit.move, fun=fun))
             return True
         return False
     
@@ -167,7 +167,7 @@ class BottomDock(QDockWidget):
         self.moveButton = QPushButton("Move")
         self.distButton = QPushButton("Pass")
         self.nextUnitButton = QPushButton("Next Unit")
-        self.nextTurnButton= QPushButton("Next Turn")
+        self.nextTurnButton = QPushButton("Next Turn")
         self.moveButton.clicked.connect(self.moveAction)
         self.distButton.clicked.connect(self.nextUnitAction)
         self.nextUnitButton.clicked.connect(self.nextUnitAction)
@@ -272,7 +272,8 @@ if __name__ == "__main__":
 
     # Have to do this manually here, after everything else has been
     # initialized and shown, or otherwise it won't work
-    #game.currentUnit.tile.ensureVisible()
+    game.currentPlayer.currentUnit.tile.ensureVisible()
     # What's this^? works fine without it
 
     app.exec_()
+

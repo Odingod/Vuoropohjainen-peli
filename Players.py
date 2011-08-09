@@ -1,13 +1,13 @@
 from Units import Unit
 
 class Player:
-    def __init__(self,game):
-        self.myTurn=False
-        self.game=game
+    def __init__(self, game):
+        self.myTurn = False
+        self.game = game
         self.printableUnitIndex = 0
     
     def doTurn(self):
-        self.myTurn=True
+        self.myTurn = True
     
     def endTurn(self):
         self.game.nextPlayerAction()
@@ -29,14 +29,14 @@ class Player:
             self.printableUnitIndex += 1
         
 class HumanPlayer(Player):
-    def __init__(self,game):
-        Player.__init__(self,game)
+    def __init__(self, game):
+        Player.__init__(self, game)
         self.unitIndex = -1
         self.currentUnit = None
     
     def doTurn(self):
         Player.doTurn(self)
-        self.unitIndex=-1
+        self.unitIndex = -1
         self.nextUnitAction()
         
     
@@ -46,7 +46,7 @@ class HumanPlayer(Player):
         self.cycleUnits()
         if self.currentUnit:
             self.currentUnit.tile.setChosen(True)
-            #self.currentUnit.tile.ensureVisible()
+            self.currentUnit.tile.ensureVisible()
         else:
             self.endTurn()
     
@@ -57,27 +57,29 @@ class HumanPlayer(Player):
     
 
 class AIPlayer(Player):
-    def __init__(self,game):
-        Player.__init__(self,game)
+    def __init__(self, game):
+        Player.__init__(self, game)
     
     def doTurn(self):
         self.unitIndex = -1
         self.cycleUnits()
         while self.currentUnit:
+            self.currentUnit.tile.ensureVisible()
             import time
             
             print 'sleeping'
             time.sleep(1)
-            neighboring=self.currentUnit.tile.getNeighborsI()
+            neighboring = self.currentUnit.tile.getNeighborsI()
             for neighbour in neighboring:
                 try:
                     if self.currentUnit.tile.map.tiles[neighbour[0]][neighbour[1]].terrain.canHoldUnit:
-                        Unit.move(self.currentUnit,neighbour[0],neighbour[1])
+                        Unit.move(self.currentUnit, neighbour[0], neighbour[1])
                         self.currentUnit.tile.setChosen(True)
                         break
                 except (IndexError, TypeError):
                     pass
             
-            #self.currentUnit.tile.ensureVisible()
+            
             self.cycleUnits()
         self.endTurn()
+
