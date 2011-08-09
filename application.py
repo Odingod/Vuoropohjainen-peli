@@ -10,10 +10,12 @@ pienempiä
 -useampi taso karttaan (korkeuseroja)
 -valikot riippuvat nykyisestä yksiköstä
 -kartassa korkeuseroja
--pilvet, savu, ym. omassa tasossaan (scrollailee vähän eri tahtiin kuin maa, helppo 'melkein 3D' efekti) 
+-pilvet, savu, ym. omassa tasossaan (scrollailee vähän eri tahtiin kuin maa, helppo 'melkein 3D' efekti)
+-reitinhaku (A*)
 
 suurempia
 
+-tekee koko pelistä event pohjaisen
 -taistelut (hankaluus riippuu miten totetutetaan, jos vain verrataan kahta lukua helppo, jos vaaditaan jotenkin pelaajan inputtia hankalampi)
 -resursseja/niiden kerääjiä
 -teknologiakehitys
@@ -23,7 +25,6 @@ suurempia
 '''
 from PySide.QtCore import *
 from PySide.QtGui import *
-from Hexagon import Hexagon
 from Map import Map
 from Players import HumanPlayer, AIPlayer
 from functools import partial
