@@ -3,10 +3,9 @@ Created on Jul 25, 2011
 
 @author: anttir
 '''
-from math import sqrt, floor, copysign
-from PySide.QtGui import QImage, QMenu, QGraphicsPolygonItem, QPolygon, QBrush, QPen, QPixmap, QGraphicsPixmapItem
+from math import sqrt
+from PySide.QtGui import QMenu, QGraphicsPolygonItem, QPolygon, QBrush, QPen, QPixmap, QGraphicsPixmapItem
 from PySide.QtCore import QRect, QPoint, Qt
-from random import randint, choice
 from functools import partial
 from Terrains import *
 
@@ -40,9 +39,6 @@ class Hexagon(object):
         return QRect((QPoint(*self.corners[0]) + QPoint(*self.corners[5])) / 2, (QPoint(*self.corners[2]) + QPoint(*self.corners[3])) / 2)
         
         
-    
-
-
 class Tile(Hexagon, QGraphicsPolygonItem):
     def __init__(self, i, j, r, map, terrain=Ground()):
         Hexagon.__init__(self, i, j, r)
@@ -60,7 +56,6 @@ class Tile(Hexagon, QGraphicsPolygonItem):
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
             self.map.tellClick(self.i, self.j)
-            #self.setChosenByDist((5,))
             self.scene().update()
         if event.button() == Qt.RightButton:
             self.getContextMenu().exec_(event.screenPos())
@@ -115,8 +110,6 @@ class Tile(Hexagon, QGraphicsPolygonItem):
             print 'dist: ' + str(dist)
         return dist
                 
-        
-    
     def setChosen(self, ch):
         self.chosen = ch
         if ch:
@@ -154,5 +147,3 @@ class Tile(Hexagon, QGraphicsPolygonItem):
             self.unitImages.pop(i)
         except ValueError:
             pass
-        
-

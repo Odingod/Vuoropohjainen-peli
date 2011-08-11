@@ -14,12 +14,10 @@ class Unit(object):
         tiles = self.tile.map.tiles
         self.tile.removeUnit(self)
         tiles[i][j].addUnit(self)
-        #self.tile.setChosenWithNeighbours()
         self.tile.setChosenByDist(-1)
         self.tile.ensureVisible()
         QCoreApplication.instance().processEvents()
 
-        
 class Tank(Unit):
     def __init__(self, tile=None, owner=None):
         Unit.__init__(self, 'tank', QImage('alien1.gif'), tile, (1, 2), 25, owner)
@@ -36,4 +34,3 @@ class Tank(Unit):
         else:
             print 'Tanks can\'t go there'
             self.tile.map.addAction(self.move)
-        

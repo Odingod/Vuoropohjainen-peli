@@ -18,7 +18,6 @@ class Map(object):
         for i in xrange(numUnits):
             for player in players:
                 while True:
-                    #tile = choice(choice(self.tiles))
                     row = choice(self.tiles)
                     tile = choice(row)
                     if tile.terrain.canHoldUnit and not tile.units:

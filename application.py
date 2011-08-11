@@ -50,11 +50,9 @@ class Game:
         self.playerIndex += 1
         if self.playerIndex == self.numPlayers:
             self.playerIndex = -1 
-            self.currentPlayer = None
+            self.currentPlayer = None # None indicates the turn is over
         else:
             self.currentPlayer = self.players[self.playerIndex]
-    
-    
     
     def nextPlayerAction(self):
         self.cyclePlayers()
@@ -67,7 +65,6 @@ class Game:
         self.resetPlayerCycle()
         self.nextPlayerAction()
         self.turn += 1
-
     
     def resetPlayerCycle(self):
         self.playerIndex = -1
@@ -91,9 +88,6 @@ class Game:
             return True
         return False
 
-
-    
-        
 
 class MainView(QGraphicsView):
     def __init__(self, scene):
@@ -195,10 +189,7 @@ class BottomDock(QDockWidget):
         self.title.setText("Unit: %d   Turn: %d" % (game.currentPlayer.printableUnitIndex, game.turn))
 
     def moveAction(self):
-        self.updateTitle()
-        if game.moveAction(self.updateTitle):
-            pass
-            #self.disableButtons()
+        game.moveAction(self.updateTitle)
 
     def nextUnitAction(self):
         if game.nextUnitAction():
@@ -270,10 +261,9 @@ if __name__ == "__main__":
     window.setWindowTitle("Super peli!")
     window.show()
 
-    # Have to do this manually here, after everything else has been
-    # initialized and shown, or otherwise it won't work
+    # Have to do this manually here, after everything has been initialized,
+    # because otherwise, the current unit might not be visible the first time
+    # you start the game
     game.currentPlayer.currentUnit.tile.ensureVisible()
-    # What's this^? works fine without it
 
     app.exec_()
-

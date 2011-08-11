@@ -38,9 +38,6 @@ class HumanPlayer(Player):
         Player.doTurn(self)
         self.unitIndex = -1
         self.nextUnitAction()
-        
-    
-
     
     def nextUnitAction(self, *args):
         self.cycleUnits()
@@ -54,8 +51,6 @@ class HumanPlayer(Player):
         print 'ending turn'
         Player.endTurn(self)
     
-    
-
 class AIPlayer(Player):
     def __init__(self, game):
         Player.__init__(self, game)
@@ -79,7 +74,5 @@ class AIPlayer(Player):
                 except (IndexError, TypeError):
                     pass
             
-            
             self.cycleUnits()
         self.endTurn()
-
