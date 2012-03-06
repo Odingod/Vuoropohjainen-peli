@@ -1,5 +1,7 @@
 from PySide.QtGui import QImage
 from PySide.QtCore import QCoreApplication
+from save import saveable, load
+from Players import Player
 
 class Unit(object):
     def __init__(self, id, image, tile=None, moves=(0, 1), hp=30, owner=None):
@@ -9,6 +11,28 @@ class Unit(object):
         self.moves = moves
         self.hp = hp
         self.owner = owner
+
+    def __saveable__(self):
+        d = {}
+
+        d['id'] = self.id
+        d['moves'] = self.moves
+        d['hp'] = self.hp
+        d['owner'] = saveable(self.owner)
+
+        return d
+
+    @classmethod
+    def __load__(cls, d, game, tile):
+        if d['id'] == 'tank':
+            u = Tank()
+
+        u.tile = tile
+        u.moves = d['moves']
+        u.hp = d['hp']
+        u.owner = load(Player, d['owner'], game=game)
+
+        return u
     
     def move(self, i, j):
         tiles = self.tile.map.tiles
