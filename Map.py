@@ -65,7 +65,6 @@ class Map(object):
             return (i_t - 1, j_t - (i_t - 1) % 2 + d_j)
     
     def tellClick(self, i, j):
-        print 'tellClick', self.waitingInput, self
         if self.waitingInput:
             temp = self.waitingInput
             self.waitingInput = []
@@ -74,6 +73,5 @@ class Map(object):
             
 
     def addAction(self, action):
-        print 'addAction', action, self
         self.waitingInput.append(action)
 

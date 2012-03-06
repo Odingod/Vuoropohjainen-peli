@@ -57,7 +57,6 @@ class Player:
         except AttributeError:
             pass
         self.unitIndex += 1
-        print self.unitIndex, self.game.numUnits
         if self.unitIndex == self.game.numUnits:
             self.unitIndex = -1 
             self.printableUnitIndex = 0
@@ -108,8 +107,8 @@ class AIPlayer(Player):
             for neighbour in neighboring:
                 try:
                     if self.currentUnit.tile.map.tiles[neighbour[0]][neighbour[1]].terrain.canHoldUnit:
-                        self.currentUnit.tile.setChosenByDist(self.currentUnit.move)
-                        self.currentUnit.move(neighbour[0], neighbour[1])
+                        self.currentUnit.move(neighbour[0], neighbour[1],
+                                ai=True)
                         self.currentUnit.tile.setChosen(True)
                         break
                 except (IndexError, TypeError):

@@ -128,7 +128,6 @@ class Tile(Hexagon, QGraphicsPolygonItem):
     
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
-            print 'call tell', self.map
             self.map.tellClick(self.i, self.j)
             self.scene().update()
         if event.button() == Qt.RightButton:
@@ -187,8 +186,6 @@ class Tile(Hexagon, QGraphicsPolygonItem):
     def setChosen(self, ch):
         self.chosen = ch
         if ch:
-            print 'choosing for map', self.map
-        if ch:
             redPen = QPen(Qt.red)
             redPen.setWidth(2)
             self.setPen(redPen)
@@ -199,7 +196,6 @@ class Tile(Hexagon, QGraphicsPolygonItem):
         self.setChosenByDist(1)
     
     def setChosenByDist(self, dist):
-        print 'choosing dist for map', self.map
         if not (isinstance(dist, tuple) or isinstance(dist, list)):
             dist = (dist,)
 

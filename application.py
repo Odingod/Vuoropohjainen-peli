@@ -35,7 +35,6 @@ import json
 class Game:
     def __init__(self):
         self.map = Map()
-        print 'wrong map', self.map
         self.numUnits = 1
         self.numPlayers = 1
         self.playerIndex = -1 
@@ -59,7 +58,6 @@ class Game:
         g = cls()
 
         g.map = load(Map, d['map'], game=g)
-        print 'right map', g.map
         g.players = map(partial(load, Player, game=g), d['players'])
         g.turn = d['turn']
         g.playerIndex = d['playerIndex']
@@ -75,6 +73,8 @@ class Game:
         with open(filename, 'w') as f:
             json.dump(d, f)
 
+        print 'Game saved.'
+
     @classmethod
     def load(cls, filename):
         Player.loadedPlayers = {}
@@ -82,6 +82,7 @@ class Game:
         with open(filename) as f:
             d = json.load(f)
 
+        print 'Game loaded.'
         return load(cls, d)
 
     def start(self):
@@ -107,7 +108,7 @@ class Game:
             self.nextTurn()
     
     def nextTurn(self):
-        self.save('save.file')
+        self.save('savefile.save')
         self.resetPlayerCycle()
         self.nextPlayerAction()
         self.turn += 1
@@ -287,8 +288,7 @@ class MainWindow(QMainWindow):
         self.mainView = MainView(self.mainScene)
 
         try:
-            game = Game.load('save.file')
-            print game.map
+            game = Game.load('savefile.save')
         except Exception as e:
             print e
             game = Game()

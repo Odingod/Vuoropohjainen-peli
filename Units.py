@@ -46,15 +46,17 @@ class Tank(Unit):
     def __init__(self, tile=None, owner=None):
         Unit.__init__(self, 'tank', QImage('alien1.gif'), tile, (1, 2), 25, owner)
     
-    def move(self, i, j, fun=None):
-        if not self.tile.map.tiles[i][j].chosen:
+    def move(self, i, j, fun=None, ai=False):
+        if not self.tile.map.tiles[i][j].chosen and not ai:
             print 'You can\'t move that far'
             self.tile.map.addAction(self.move)
         elif self.tile.map.tiles[i][j].terrain.canHoldUnit:
             super(Tank, self).move(i, j)
             if fun:
                 fun()
-            self.owner.nextUnitAction()
+
+            if not ai:
+                self.owner.nextUnitAction()
         else:
             print 'Tanks can\'t go there'
             self.tile.map.addAction(self.move)
