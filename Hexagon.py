@@ -8,11 +8,16 @@ from PySide.QtGui import QMenu, QGraphicsPolygonItem, QPolygon, QBrush, QPen, QP
 from PySide.QtCore import QRect, QPoint, Qt
 from functools import partial
 from Terrains import *
+from Units import Unit
+from save import saveable, load
 
 class Hexagon(object):
     neighbor_di = (0, 1, 1, 0, -1, -1)
     neighbor_dj = ((-1, -1, 0, 1, 0, -1), (-1, 0, 1, 1, 1, 0))
-    def __init__(self, i, j, radius=20):
+    def __init__(self, i, j, radius=20, loading=False):
+        if loading:
+            return
+
         self.i = i
         self.j = j
         self.r = radius
@@ -25,6 +30,38 @@ class Hexagon(object):
         self.corners = [(a + self.x, b + self.y) for a, b in self.corners]
         self.chosen = False
         
+    def __saveable__(self):
+        d = {}
+
+        d['i'] = self.i
+        d['j'] = self.j
+        d['r'] = self.r
+        d['w'] = self.w
+        d['s'] = self.s
+        d['h'] = self.h
+        d['x'] = self.x
+        d['y'] = self.y
+        d['corners'] = self.corners
+
+        return d
+
+    @classmethod
+    def __load__(cls, d, h=None):
+        if not h:
+            h = cls(0, 0, loading=True)
+
+        h.i = d['i']
+        h.j = d['j']
+        h.r = d['r']
+        h.w = d['w']
+        h.s = d['s']
+        h.h = d['h']
+        h.x = d['x']
+        h.y = d['y']
+        h.corners = d['corners']
+        h.chosen = False
+
+        return h
         
     def getNeighborI(self, number):
         i, j = self.i + Hexagon.neighbor_di[number], self.j + Hexagon.neighbor_dj[self.i % 2][number]
@@ -40,8 +77,11 @@ class Hexagon(object):
         
         
 class Tile(Hexagon, QGraphicsPolygonItem):
-    def __init__(self, i, j, r, map, terrain=Ground()):
-        Hexagon.__init__(self, i, j, r)
+    def __init__(self, i, j, r, map, terrain=Ground(), loading=False):
+        if loading:
+            return
+
+        Hexagon.__init__(self, i, j, r, loading=loading)
         poly = QPolygon()
         for p in self.corners:
             poly << QPoint(*p)
@@ -52,6 +92,39 @@ class Tile(Hexagon, QGraphicsPolygonItem):
         self.map = map
         self.setBrush(QBrush(self.terrain.image))
         self.setPen(QPen())
+
+    def __saveable__(self):
+        d = Hexagon.__saveable__(self)
+
+        d['terrain'] = saveable(self.terrain)
+        d['units'] = map(saveable, self.units)
+        # No need to save unitImages, can be loaded from self.units.
+        
+        return d
+
+    @classmethod
+    def __load__(cls, d, game):
+        t = cls(0, 0, 0, None, loading=True)
+        Hexagon.__load__(d, t)
+
+        t.map = game.map
+        t.terrain = load(Terrain, d['terrain'])
+        t.units = []
+        t.unitImages = []
+        units = map(partial(load, Unit, game=game, tile=t), d['units'])
+        
+        poly = QPolygon()
+        for p in t.corners:
+            poly << QPoint(*p)
+        QGraphicsPolygonItem.__init__(t, poly)
+
+        t.setBrush(QBrush(t.terrain.image))
+        t.setPen(QPen())
+
+        for unit in units:
+            t.addUnit(unit)
+
+        return t
     
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
@@ -123,8 +196,9 @@ class Tile(Hexagon, QGraphicsPolygonItem):
         self.setChosenByDist(1)
     
     def setChosenByDist(self, dist):
-        if not isinstance(dist, tuple):
+        if not (isinstance(dist, tuple) or isinstance(dist, list)):
             dist = (dist,)
+
         for row in self.map.tiles:
             for hex in row:
                 if hex.distance(self.i, self.j) in dist:

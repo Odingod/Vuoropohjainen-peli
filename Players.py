@@ -1,15 +1,54 @@
-from Units import Unit
-
 class Player:
+    count = 0
+    loadedPlayers = {}
+
     def __init__(self, game):
+        Player.count += 1
+        self.id = Player.count
         self.myTurn = False
         self.game = game
         self.printableUnitIndex = 0
+
+    def __saveable__(self):
+        d = {}
+
+        d['id'] = self.id
+        d['type'] = 'human' if isinstance(self, HumanPlayer) else 'ai'
+        d['myTurn'] = self.myTurn
+        d['unitIndex'] = self.unitIndex
+        d['printableUnitIndex'] = self.printableUnitIndex
+        
+        return d
+
+    @classmethod
+    def __load__(cls, d, game):
+        if cls.loadedPlayers.has_key(d['id']):
+            return cls.loadedPlayers[d['id']]
+
+        if d['type'] == 'human':
+            p = HumanPlayer(game)
+        else:
+            p = AIPlayer(game)
+
+        p.id = d['id']
+        p.myTurn = d['myTurn']
+        p.unitIndex = d['unitIndex']
+        p.printableUnitIndex = d['printableUnitIndex']
+        
+        if p.myTurn:
+            p.unitIndex -= 1
+            p.printableUnitIndex -= 1
+            p.cycleUnits() # sets p.currentUnit
+
+        cls.loadedPlayers[p.id] = p
+
+        return p
     
     def doTurn(self):
         self.myTurn = True
     
     def endTurn(self):
+        self.myTurn = False
         self.game.nextPlayerAction()
     
     def cycleUnits(self):
@@ -68,7 +107,8 @@ class AIPlayer(Player):
             for neighbour in neighboring:
                 try:
                     if self.currentUnit.tile.map.tiles[neighbour[0]][neighbour[1]].terrain.canHoldUnit:
-                        Unit.move(self.currentUnit, neighbour[0], neighbour[1])
+                        self.currentUnit.move(neighbour[0], neighbour[1],
+                                ai=True)
                         self.currentUnit.tile.setChosen(True)
                         break
                 except (IndexError, TypeError):

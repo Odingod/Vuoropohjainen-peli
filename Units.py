@@ -1,5 +1,7 @@
 from PySide.QtGui import QImage
 from PySide.QtCore import QCoreApplication
+from save import saveable, load
+from Players import Player
 
 class Unit(object):
     def __init__(self, id, image, tile=None, moves=(0, 1), hp=30, owner=None):
@@ -9,6 +11,28 @@ class Unit(object):
         self.moves = moves
         self.hp = hp
         self.owner = owner
+
+    def __saveable__(self):
+        d = {}
+
+        d['id'] = self.id
+        d['moves'] = self.moves
+        d['hp'] = self.hp
+        d['owner'] = saveable(self.owner)
+
+        return d
+
+    @classmethod
+    def __load__(cls, d, game, tile):
+        if d['id'] == 'tank':
+            u = Tank()
+
+        u.tile = tile
+        u.moves = d['moves']
+        u.hp = d['hp']
+        u.owner = load(Player, d['owner'], game=game)
+
+        return u
     
     def move(self, i, j):
         tiles = self.tile.map.tiles
@@ -22,15 +46,17 @@ class Tank(Unit):
     def __init__(self, tile=None, owner=None):
         Unit.__init__(self, 'tank', QImage('alien1.gif'), tile, (1, 2), 25, owner)
     
-    def move(self, i, j, fun=None):
-        if not self.tile.map.tiles[i][j].chosen:
+    def move(self, i, j, fun=None, ai=False):
+        if not self.tile.map.tiles[i][j].chosen and not ai:
             print 'You can\'t move that far'
             self.tile.map.addAction(self.move)
         elif self.tile.map.tiles[i][j].terrain.canHoldUnit:
             super(Tank, self).move(i, j)
             if fun:
                 fun()
-            self.owner.nextUnitAction()
+
+            if not ai:
+                self.owner.nextUnitAction()
         else:
             print 'Tanks can\'t go there'
             self.tile.map.addAction(self.move)

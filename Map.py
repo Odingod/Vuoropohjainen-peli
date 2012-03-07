@@ -1,6 +1,8 @@
 from Hexagon import *
 from Units import *
 from random import choice, randint
+from save import saveable, load
+from functools import partial
 
 class Map(object):
     def __init__(self):
@@ -8,6 +10,30 @@ class Map(object):
         self.metrics = Hexagon(-1, -1)
         self.waitingInput = []
         self.units = []
+
+    def __saveable__(self):
+        d = {}
+
+        d['tiles'] = map(lambda x: map(saveable, x), self.tiles)
+        d['metrics'] = saveable(self.metrics)
+        d['units'] = map(saveable, self.units)
+
+        return d
+
+    @classmethod
+    def __load__(cls, d, game):
+        m = cls()
+        game.map = m
+
+        m.tiles = map(lambda x: map(partial(load, Tile, game=game), x), d['tiles'])
+        m.metrics = load(Hexagon, d['metrics'])
+
+        for t in m.tiles:
+            for r in t:
+                for u in r.units:
+                    m.units.append(u)
+
+        return m
     
     def createSquareMap(self, numUnits, players, w=10, h=10, r=20):
         self.metrics = Hexagon(-1, -1, r)

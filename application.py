@@ -26,9 +26,11 @@ suurempia
 from PySide.QtCore import *
 from PySide.QtGui import *
 from Map import Map
-from Players import HumanPlayer, AIPlayer
+from Players import Player, HumanPlayer, AIPlayer
 from functools import partial
 import sys
+from save import saveable, load
+import json
 
 class Game:
     def __init__(self):
@@ -38,6 +40,50 @@ class Game:
         self.playerIndex = -1 
         self.turn = 1
         self.players = []
+
+    def __saveable__(self):
+        """ Returns a saveable representation of the game. """
+        d = {}
+
+        d['players'] = map(saveable, self.players)
+        d['map'] = saveable(self.map)
+        d['turn'] = self.turn
+        d['playerIndex'] = self.playerIndex
+        d['currentPlayer'] = saveable(self.currentPlayer)
+
+        return d
+
+    @classmethod
+    def __load__(cls, d):
+        g = cls()
+
+        g.map = load(Map, d['map'], game=g)
+        g.players = map(partial(load, Player, game=g), d['players'])
+        g.turn = d['turn']
+        g.playerIndex = d['playerIndex']
+        g.currentPlayer = load(Player, d['currentPlayer'], game=g)
+        g.numUnits = len(g.map.units)
+        g.numPlayers = len(g.players)
+
+        return g
+
+    def save(self, filename):
+        d = saveable(self)
+
+        with open(filename, 'w') as f:
+            json.dump(d, f)
+
+        print 'Game saved.'
+
+    @classmethod
+    def load(cls, filename):
+        Player.loadedPlayers = {}
+
+        with open(filename) as f:
+            d = json.load(f)
+
+        print 'Game loaded.'
+        return load(cls, d)
 
     def start(self):
         self.players.append(HumanPlayer(self))
@@ -62,6 +108,7 @@ class Game:
             self.nextTurn()
     
     def nextTurn(self):
+        self.save('savefile.save')
         self.resetPlayerCycle()
         self.nextPlayerAction()
         self.turn += 1
@@ -239,15 +286,21 @@ class MainWindow(QMainWindow):
         global game
         self.mainScene = QGraphicsScene()
         self.mainView = MainView(self.mainScene)
-        game = Game()
-        newGameDialog = NewGameDialog(self)
-        r = newGameDialog.exec_()
 
-        if r == 0:
-            self.close()
-            sys.exit()
+        try:
+            game = Game.load('savefile.save')
+        except Exception as e:
+            print e
+            game = Game()
+            newGameDialog = NewGameDialog(self)
+            r = newGameDialog.exec_()
 
-        game.start()
+            if r == 0:
+                self.close()
+                sys.exit()
+
+            game.start()
+
         [[self.mainScene.addItem(hex) for hex in row] for row in game.map.tiles]
 
         self.setCentralWidget(self.mainView)
