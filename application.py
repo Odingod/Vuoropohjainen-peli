@@ -118,7 +118,7 @@ class Game:
     
     def moveAction(self, fun):
         if isinstance(self.currentPlayer, HumanPlayer):
-            self.currentPlayer.currentUnit.tile.setChosenByDist(self.currentPlayer.currentUnit.moves)
+            self.currentPlayer.currentUnit.tile.setChosenByReach(self.currentPlayer.currentUnit.moves)
             self.map.addAction(partial(self.currentPlayer.currentUnit.move, fun=fun))
             return True
         return False

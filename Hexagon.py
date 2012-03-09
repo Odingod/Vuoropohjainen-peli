@@ -193,28 +193,34 @@ class Tile(Hexagon, QGraphicsPolygonItem):
             print 'dist: ' + str(dist)
         return dist
 
-    def canReach(self, i, j, dist, out=False):
+    def canReach(self, i, j, dist, getReachables=False):
         # Säilytetään juttuja leveyshakua varten
         lista = [(0, 0, self)]
 
         # Säilytetään jo käydyt jutut ettei käydä uusiksi
         used = set([])
+        reachables = set([])
 
         while lista:
-            curdist, lenght, current = heapq.heappop(lista)
+            curdist, length, current = heapq.heappop(lista)
             used.add(current)
 
-            if (lenght > dist) or (curdist > dist - lenght) or \
-                    not current.terrain.canHoldUnit:
+            if (length > dist) or (not current.terrain.canHoldUnit) or \
+                    (curdist > dist - length and not getReachables):
                 continue
 
-            if current.i == i and current.j == j:
+            reachables.add(current)
+
+            if current.i == i and current.j == j and not getReachables:
                 return True
 
             for x in current.getBoardNeighbors():
                 tile = self.map.tiles[x[0]][x[1]]
                 if not tile in used:
-                    heapq.heappush(lista, (tile.distance(i, j), lenght+1, tile))
+                    heapq.heappush(lista, (tile.distance(i, j), length+1, tile))
+
+        if getReachables:
+            return reachables
 
         return False
                 
@@ -236,11 +242,20 @@ class Tile(Hexagon, QGraphicsPolygonItem):
 
         for row in self.map.tiles:
             for hex in row:
-                #if hex.distance(self.i, self.j) in dist:
-                if hex.canReach(self.i, self.j, 3) in dist:
+                if hex.distance(self.i, self.j) in dist:
                     hex.setChosen(True)
                 else:
                     hex.setChosen(False)
+    
+    def setChosenByReach(self, reach):
+        if isinstance(reach, tuple) or isinstance(reach, list):
+            reach = max(reach)
+
+        # Deselect all
+        self.setChosenByDist(-1)
+
+        for reachable in self.canReach(self.i, self.j, reach, True):
+            reachable.setChosen(True)
     
     def addUnit(self, unit):
         unit.tile = self

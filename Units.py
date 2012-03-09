@@ -44,7 +44,7 @@ class Unit(object):
 
 class Tank(Unit):
     def __init__(self, tile=None, owner=None):
-        Unit.__init__(self, 'tank', QImage('alien1.gif'), tile, (1, 2), 25, owner)
+        Unit.__init__(self, 'tank', QImage('alien1.gif'), tile, (1, 2, 3), 25, owner)
     
     def move(self, i, j, fun=None, ai=False):
         if not self.tile.map.tiles[i][j].chosen and not ai:
