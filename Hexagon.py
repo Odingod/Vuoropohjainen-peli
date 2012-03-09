@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 '''
 Created on Jul 25, 2011
 
@@ -72,6 +73,14 @@ class Hexagon(object):
     def getNeighborsI(self):
         return [self.getNeighborI(i) for i in xrange(6)]
     
+    def getBoardNeighbors(self):
+        # Returns only neighbors who are in board
+        temp = []
+        for x in self.getNeighborsI():
+            if x and x[0] >= 0 and x[1] >= 0 and x[0] < len(self.map.tiles) and x[1] < len(self.map.tiles[0]):
+                temp.append(x)
+        return temp
+        
     def getImageRect(self):
         return QRect((QPoint(*self.corners[0]) + QPoint(*self.corners[5])) / 2, (QPoint(*self.corners[2]) + QPoint(*self.corners[3])) / 2)
         
@@ -182,6 +191,25 @@ class Tile(Hexagon, QGraphicsPolygonItem):
         if out:
             print 'dist: ' + str(dist)
         return dist
+
+    def canReach(self, i, j, dist, out=False):
+        lista = [(0, self)] # Säilytetään juttuja leveyshakua varten
+        used = [] # Säilytetään jo käydyt jutut ettei käyd uusiksi
+        current = None          
+        while lista:
+            # Sortataan lista, jotta haku olisi A*, ei jaksanut tehdä mitään järkevämpää, kuten heap
+            # Ei varmaan kauheasti väliä kun listan ei pitäisi hirveän isoksi kasvaa
+            lista.sort(key = lambda a: a[1].distance(i, j)) 
+            lenght, current = lista.pop(0)
+            used.append(current)
+            if (lenght > dist) or (current.distance(i, j) > dist - lenght) or (not current.terrain.canHoldUnit):
+                continue
+            if current.i == i and current.j == j:
+                return True
+            for x in current.getBoardNeighbors():
+                if not self.map.tiles[x[0]][x[1]] in used:
+                    lista.append((lenght+1, self.map.tiles[x[0]][x[1]]))
+        return False
                 
     def setChosen(self, ch):
         self.chosen = ch
@@ -201,7 +229,8 @@ class Tile(Hexagon, QGraphicsPolygonItem):
 
         for row in self.map.tiles:
             for hex in row:
-                if hex.distance(self.i, self.j) in dist:
+                #if hex.distance(self.i, self.j) in dist:
+                if hex.canReach(self.i, self.j, 3) in dist:
                     hex.setChosen(True)
                 else:
                     hex.setChosen(False)
