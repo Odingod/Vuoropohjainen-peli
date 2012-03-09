@@ -11,6 +11,7 @@ from functools import partial
 from Terrains import *
 from Units import Unit
 from save import saveable, load
+import heapq
 
 class Hexagon(object):
     neighbor_di = (0, 1, 1, 0, -1, -1)
@@ -193,22 +194,28 @@ class Tile(Hexagon, QGraphicsPolygonItem):
         return dist
 
     def canReach(self, i, j, dist, out=False):
-        lista = [(0, self)] # Säilytetään juttuja leveyshakua varten
-        used = [] # Säilytetään jo käydyt jutut ettei käyd uusiksi
-        current = None          
+        # Säilytetään juttuja leveyshakua varten
+        lista = [(0, 0, self)]
+
+        # Säilytetään jo käydyt jutut ettei käydä uusiksi
+        used = set([])
+
         while lista:
-            # Sortataan lista, jotta haku olisi A*, ei jaksanut tehdä mitään järkevämpää, kuten heap
-            # Ei varmaan kauheasti väliä kun listan ei pitäisi hirveän isoksi kasvaa
-            lista.sort(key = lambda a: a[1].distance(i, j)) 
-            lenght, current = lista.pop(0)
-            used.append(current)
-            if (lenght > dist) or (current.distance(i, j) > dist - lenght) or (not current.terrain.canHoldUnit):
+            curdist, lenght, current = heapq.heappop(lista)
+            used.add(current)
+
+            if (lenght > dist) or (curdist > dist - lenght) or \
+                    not current.terrain.canHoldUnit:
                 continue
+
             if current.i == i and current.j == j:
                 return True
+
             for x in current.getBoardNeighbors():
-                if not self.map.tiles[x[0]][x[1]] in used:
-                    lista.append((lenght+1, self.map.tiles[x[0]][x[1]]))
+                tile = self.map.tiles[x[0]][x[1]]
+                if not tile in used:
+                    heapq.heappush(lista, (tile.distance(i, j), lenght+1, tile))
+
         return False
                 
     def setChosen(self, ch):
