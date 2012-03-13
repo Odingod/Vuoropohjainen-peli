@@ -8,10 +8,10 @@ import Units
 import Map
 from PySide.QtGui import QImage
 class Settlement():
-    def __init__(self, name, image=QImage("castle_30x30.png"), tile=None, population=1000, owner=None):
+    def __init__(self, name, image="castle_30x30.png", tile=None, population=1000, owner=None):
         self.name = name
         self.owner = owner
-        self.image = image
+        self.image = QImage(image)
         self.tile = tile
         self.population = population
         self.main_building = 1
