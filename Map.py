@@ -3,6 +3,7 @@ from Units import *
 from random import choice, randint
 from save import saveable, load
 from functools import partial
+from Settlement import *
 
 class Map(object):
     def __init__(self):
@@ -10,6 +11,7 @@ class Map(object):
         self.metrics = Hexagon(-1, -1)
         self.waitingInput = []
         self.units = []
+        self.settlements = []
 
     def __saveable__(self):
         d = {}
@@ -41,6 +43,16 @@ class Map(object):
             self.tiles.append([])
             for j in xrange(h):
                 self.tiles[i].append(Tile(i, j, r, self, Ground() if randint(1, 10) < 9 else Water()))
+        for player in players:
+            while True:
+                row = choice(self.tiles)
+                tile = choice(row)
+                if tile.terrain.canHoldUnit and not tile.units:
+                    settlement = Settlement("capital", owner=player)
+                    tile.addUnit(settlement)
+                    self.settlements.append(settlement)
+                    break
+
         for i in xrange(numUnits):
             for player in players:
                 while True:
