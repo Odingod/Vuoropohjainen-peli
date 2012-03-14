@@ -240,9 +240,6 @@ class BottomDock(QDockWidget):
         self.build_farmButton = QPushButton("Build farm")
         self.build_tankButton = QPushButton("Build tank")
         self.build_wallButton = QPushButton("Build wall")
-        self.distButton.clicked.connect(self.nextUnitAction)
-        self.nextUnitButton.clicked.connect(self.nextUnitAction)
-        self.nextTurnButton.clicked.connect(self.nextTurnAction)
 
         self.build_farmButton.clicked.connect(
                 lambda: self.buildAction('farm'))
