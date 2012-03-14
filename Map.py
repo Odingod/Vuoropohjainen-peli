@@ -11,7 +11,6 @@ class Map(object):
         self.metrics = Hexagon(-1, -1)
         self.waitingInput = []
         self.units = []
-        self.settlements = []
 
     def __saveable__(self):
         d = {}
@@ -48,9 +47,9 @@ class Map(object):
                 row = choice(self.tiles)
                 tile = choice(row)
                 if tile.terrain.canHoldUnit and not tile.units:
-                    settlement = Settlement("capital", owner=player)
+                    settlement = Settlement("capital", map=self, owner=player)
                     tile.addUnit(settlement)
-                    self.settlements.append(settlement)
+                    self.units.append(settlement)
                     break
 
         for i in xrange(numUnits):

@@ -57,13 +57,16 @@ class Player:
         except AttributeError:
             pass
         self.unitIndex += 1
-        if self.unitIndex == self.game.numUnits:
+        if self.unitIndex == len(self.game.map.units):
+            print 'full', self.unitIndex
             self.unitIndex = -1 
             self.printableUnitIndex = 0
             self.currentUnit = None
         elif self.game.map.units[self.unitIndex].owner != self:
+            print 'enemy', self.unitIndex
             self.cycleUnits()
         else:
+            print 'own', self.unitIndex
             self.currentUnit = self.game.map.units[self.unitIndex]
             self.printableUnitIndex += 1
         
@@ -80,6 +83,8 @@ class HumanPlayer(Player):
     
     def nextUnitAction(self, *args):
         self.cycleUnits()
+        print 'unit', self.currentUnit
+        print 'index', self.unitIndex
         if self.currentUnit:
             self.currentUnit.tile.setChosen(True)
             self.currentUnit.tile.ensureVisible()
