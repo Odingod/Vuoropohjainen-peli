@@ -249,7 +249,10 @@ class Tile(Hexagon, QGraphicsPolygonItem):
     
     def setChosenByReach(self, reach):
         if isinstance(reach, tuple) or isinstance(reach, list):
-            reach = max(reach)
+            if reach:
+                reach = max(reach)
+            else:
+                reach = -1
 
         # Deselect all
         self.setChosenByDist(-1)

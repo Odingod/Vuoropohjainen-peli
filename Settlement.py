@@ -27,6 +27,9 @@ class Settlement(Unit):
             self.hp += 50
         else:
             print "no such building, available buildings: barracks, farm, wall"
+            return False
+
+        return True
 
     def recruit(self, unit):
         if unit == "tank":
@@ -37,3 +40,7 @@ class Settlement(Unit):
             unit = Tank(owner=self.owner)
             self.tile.addUnit(unit)
             self.map.units.append(unit)
+
+            return True
+
+        return False

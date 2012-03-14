@@ -42,6 +42,12 @@ class Unit(object):
         self.tile.ensureVisible()
         QCoreApplication.instance().processEvents()
 
+    def build(self, *args):
+        print 'This unit cannot build!'
+
+    def recruit(self, *args):
+        print 'This unit cannot recruit!'
+
 class Tank(Unit):
     def __init__(self, tile=None, owner=None):
         Unit.__init__(self, 'tank', QImage('alien1.gif'), tile, (1, 2, 3), 25, owner)

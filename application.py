@@ -118,21 +118,25 @@ class Game:
     
     def moveAction(self, fun):
         if isinstance(self.currentPlayer, HumanPlayer):
-            self.currentPlayer.currentUnit.tile.setChosenByReach(self.currentPlayer.currentUnit.moves)
-            self.map.addAction(partial(self.currentPlayer.currentUnit.move, fun=fun))
+            if not self.currentPlayer.currentUnit.moves:
+                print 'This unit cannot move!'
+                return False
+
+            self.currentPlayer.currentUnit.tile.setChosenByReach(
+                    self.currentPlayer.currentUnit.moves)
+            self.map.addAction(partial(
+                self.currentPlayer.currentUnit.move, fun=fun))
             return True
         return False
 
     def buildAction(self, building):
         if isinstance(self.currentPlayer, HumanPlayer):
-            self.currentPlayer.currentUnit.build(building)
-            return True
+            return self.currentPlayer.currentUnit.build(building)
         return False
 
     def recruitAction(self, unit):
         if isinstance(self.currentPlayer, HumanPlayer):
-            self.currentPlayer.currentUnit.recruit(unit)
-            return True
+            return self.currentPlayer.currentUnit.recruit(unit)
         return False
 
     def nextUnitAction(self):
@@ -272,12 +276,12 @@ class BottomDock(QDockWidget):
         self.title.setText("Unit: %d   Turn: %d" % (game.currentPlayer.printableUnitIndex, game.turn))
 
     def buildAction(self, building):
-        game.buildAction(building)
-        self.nextUnitAction()
+        if game.buildAction(building):
+            self.nextUnitAction()
 
     def recruitAction(self, unit):
-        game.recruitAction(unit)
-        self.nextUnitAction()
+        if game.recruitAction(unit):
+            self.nextUnitAction()
 
     def moveAction(self):
         game.moveAction(self.updateTitle)
