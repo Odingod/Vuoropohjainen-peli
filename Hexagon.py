@@ -212,7 +212,7 @@ class Tile(Hexagon, QGraphicsPolygonItem):
             reachables.add(current)
 
             if current.i == i and current.j == j and not getReachables:
-                return True
+                return len(current.units) == 0
 
             for x in current.getBoardNeighbors():
                 tile = self.map.tiles[x[0]][x[1]]
@@ -220,7 +220,8 @@ class Tile(Hexagon, QGraphicsPolygonItem):
                     heapq.heappush(lista, (tile.distance(i, j), length+1, tile))
 
         if getReachables:
-            return reachables
+            # Filter out the ones that have units in them.
+            return filter(lambda x: not x.units, reachables)
 
         return False
                 
