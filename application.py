@@ -227,15 +227,14 @@ class BottomDock(QDockWidget):
         self.moveButton = QPushButton("Move")
 
         self.moveButton.clicked.connect(self.moveAction)
-        self.distButton.clicked.connect(self.nextUnitAction)
         self.nextUnitButton.clicked.connect(self.nextUnitAction)
         self.nextTurnButton.clicked.connect(self.nextTurnAction)
 
-        actionButtonGroupBox = QGroupBox()
+        actionButtonGroupBox = QWidget()
         abLayout = QHBoxLayout()
+        mar = abLayout.contentsMargins().bottom()
+        abLayout.setContentsMargins(mar, mar, mar, 0)
         abLayout.addWidget(self.moveButton)
-        abLayout.addWidget(self.distButton)
-        actionButtonGroupBox.setLayout(abLayout)
 
         self.build_farmButton = QPushButton("Build farm")
         self.build_tankButton = QPushButton("Build tank")
@@ -249,20 +248,18 @@ class BottomDock(QDockWidget):
         self.build_tankButton.clicked.connect(
                 lambda: self.recruitAction('tank'))
 
-        actionButtonGroupBox2 = QGroupBox()
-        abLayout = QHBoxLayout()
         abLayout.addWidget(self.build_farmButton)
         abLayout.addWidget(self.build_tankButton)
         abLayout.addWidget(self.build_wallButton)
-        actionButtonGroupBox2.setLayout(abLayout)
+        actionButtonGroupBox.setLayout(abLayout)
 
-        turnControlButtonGroupBox = QGroupBox()
+        turnControlButtonGroupBox = QWidget()
         tcLayout = QHBoxLayout()
+        tcLayout.setContentsMargins(mar, 0, mar, mar)
         tcLayout.addWidget(self.nextUnitButton)
         tcLayout.addWidget(self.nextTurnButton)
         turnControlButtonGroupBox.setLayout(tcLayout)
 
-        layout.addRow(actionButtonGroupBox2)
         layout.addRow(actionButtonGroupBox)
         layout.addRow(turnControlButtonGroupBox)
         bottomDockWidget = QWidget()
