@@ -47,7 +47,7 @@ class Map(object):
                 row = choice(self.tiles)
                 tile = choice(row)
                 if tile.terrain.canHoldUnit and not tile.units:
-                    settlement = Settlement("capital", owner=player)
+                    settlement = Settlement("capital", map=self, owner=player)
                     tile.addUnit(settlement)
                     self.units.append(settlement)
                     break

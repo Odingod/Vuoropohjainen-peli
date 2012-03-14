@@ -122,10 +122,19 @@ class Game:
             self.map.addAction(partial(self.currentPlayer.currentUnit.move, fun=fun))
             return True
         return False
+
     def buildAction(self, building):
         if isinstance(self.currentPlayer, HumanPlayer):
             self.currentPlayer.currentUnit.build(building)
             return True
+        return False
+
+    def recruitAction(self, unit):
+        if isinstance(self.currentPlayer, HumanPlayer):
+            self.currentPlayer.currentUnit.recruit(unit)
+            return True
+        return False
+
     def nextUnitAction(self):
         if isinstance(self.currentPlayer, HumanPlayer):
             self.currentPlayer.nextUnitAction()
@@ -208,46 +217,51 @@ class BottomDock(QDockWidget):
         self.setTitleBarWidget(self.title)
 
         layout = QFormLayout()
-        print game.currentPlayer.currentUnit.id
         self.distButton = QPushButton("Pass")
         self.nextUnitButton = QPushButton("Next Unit")
         self.nextTurnButton = QPushButton("Next Turn")
         self.moveButton = QPushButton("Move")
-        if game.currentPlayer.currentUnit.id == "tank":
-            
-            
-            self.moveButton.clicked.connect(self.moveAction)
-            self.distButton.clicked.connect(self.nextUnitAction)
-            self.nextUnitButton.clicked.connect(self.nextUnitAction)
-            self.nextTurnButton.clicked.connect(self.nextTurnAction)
 
-            actionButtonGroupBox = QGroupBox()
-            abLayout = QHBoxLayout()
-            abLayout.addWidget(self.moveButton)
-            abLayout.addWidget(self.distButton)
-            actionButtonGroupBox.setLayout(abLayout)
-        if game.currentPlayer.currentUnit.id == "settlement":
-            self.build_farmButton = QPushButton("Build farm")
-            self.build_tankButton = QPushButton("Build tank")
-            self.build_wallButton = QPushButton("Build wall")
-            self.distButton.clicked.connect(self.nextUnitAction)
-            self.nextUnitButton.clicked.connect(self.nextUnitAction)
-            self.nextTurnButton.clicked.connect(self.nextTurnAction)
-            self.build_farmButton.clicked.connect(self.buildAction)
-            #self.build_tankButton.clicked.connect(self.recruitAction("tank"))
-            #self.build_wallButton.clicked.connect(self.buildAction("wall"))
-            actionButtonGroupBox = QGroupBox()
-            abLayout = QHBoxLayout()
-            abLayout.addWidget(self.build_farmButton)
-            abLayout.addWidget(self.build_tankButton)
-            abLayout.addWidget(self.build_wallButton)
-            actionButtonGroupBox.setLayout(abLayout)
+        self.moveButton.clicked.connect(self.moveAction)
+        self.distButton.clicked.connect(self.nextUnitAction)
+        self.nextUnitButton.clicked.connect(self.nextUnitAction)
+        self.nextTurnButton.clicked.connect(self.nextTurnAction)
+
+        actionButtonGroupBox = QGroupBox()
+        abLayout = QHBoxLayout()
+        abLayout.addWidget(self.moveButton)
+        abLayout.addWidget(self.distButton)
+        actionButtonGroupBox.setLayout(abLayout)
+
+        self.build_farmButton = QPushButton("Build farm")
+        self.build_tankButton = QPushButton("Build tank")
+        self.build_wallButton = QPushButton("Build wall")
+        self.distButton.clicked.connect(self.nextUnitAction)
+        self.nextUnitButton.clicked.connect(self.nextUnitAction)
+        self.nextTurnButton.clicked.connect(self.nextTurnAction)
+
+        self.build_farmButton.clicked.connect(
+                lambda: self.buildAction('farm'))
+        self.build_wallButton.clicked.connect(
+                lambda: self.buildAction('wall'))
+
+        self.build_tankButton.clicked.connect(
+                lambda: self.recruitAction('tank'))
+
+        actionButtonGroupBox2 = QGroupBox()
+        abLayout = QHBoxLayout()
+        abLayout.addWidget(self.build_farmButton)
+        abLayout.addWidget(self.build_tankButton)
+        abLayout.addWidget(self.build_wallButton)
+        actionButtonGroupBox2.setLayout(abLayout)
+
         turnControlButtonGroupBox = QGroupBox()
         tcLayout = QHBoxLayout()
         tcLayout.addWidget(self.nextUnitButton)
         tcLayout.addWidget(self.nextTurnButton)
         turnControlButtonGroupBox.setLayout(tcLayout)
 
+        layout.addRow(actionButtonGroupBox2)
         layout.addRow(actionButtonGroupBox)
         layout.addRow(turnControlButtonGroupBox)
         bottomDockWidget = QWidget()
@@ -256,8 +270,15 @@ class BottomDock(QDockWidget):
 
     def updateTitle(self):
         self.title.setText("Unit: %d   Turn: %d" % (game.currentPlayer.printableUnitIndex, game.turn))
-    def buildAction(self, building = "farm"):
+
+    def buildAction(self, building):
         game.buildAction(building)
+        self.nextUnitAction()
+
+    def recruitAction(self, unit):
+        game.recruitAction(unit)
+        self.nextUnitAction()
+
     def moveAction(self):
         game.moveAction(self.updateTitle)
 
