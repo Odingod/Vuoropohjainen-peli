@@ -268,6 +268,14 @@ class Tile(Hexagon, QGraphicsPolygonItem):
         image.setOffset(self.x + 12, self.y + 10)
         self.unitImages.append(image)
     
+    def getUnit(self):
+        return self.units
+    def canBuild(self):
+        for i in range(len(self.units)):
+            if self.units[i].getId() == "tank":
+                return False
+        return True
+    
     def removeUnit(self, unit):
         try:
             i = self.units.index(unit)

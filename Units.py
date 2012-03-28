@@ -33,7 +33,8 @@ class Unit(object):
         u.owner = load(Player, d['owner'], game=game)
 
         return u
-    
+    def getId(self):
+        return self.id
     def move(self, i, j):
         tiles = self.tile.map.tiles
         self.tile.removeUnit(self)

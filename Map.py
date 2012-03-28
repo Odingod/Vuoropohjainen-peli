@@ -4,6 +4,7 @@ from random import choice, randint
 from save import saveable, load
 from functools import partial
 from Settlement import *
+from math import *
 
 class Map(object):
     def __init__(self):
@@ -47,7 +48,7 @@ class Map(object):
                 row = choice(self.tiles)
                 tile = choice(row)
                 if tile.terrain.canHoldUnit and not tile.units:
-                    settlement = Settlement("capital", map=self, owner=player)
+                    settlement = Settlement("capital", map=self, owner=player, tile=tile)
                     tile.addUnit(settlement)
                     self.units.append(settlement)
                     break
