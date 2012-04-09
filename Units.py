@@ -49,6 +49,14 @@ class Unit(object):
     def recruit(self, *args):
         print 'This unit cannot recruit!'
 
+class Building(Unit):
+	def __init__(self, tile=None, owner=None):
+		Unit.__init__(self, 'builting', QImage('castle_30x30.png'), tile, (0), 100, owner)
+		
+	def move(self, i=None, j=None, ai=False):
+		print "can't move a building"
+		
+		
 class Tank(Unit):
     def __init__(self, tile=None, owner=None):
         Unit.__init__(self, 'tank', QImage('alien1.png'), tile, (1, 2, 3), 25, owner)
