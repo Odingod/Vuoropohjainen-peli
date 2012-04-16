@@ -5,6 +5,7 @@ from save import saveable, load
 from functools import partial
 from Settlement import *
 from math import *
+from resources import *
 
 class Map(object):
     def __init__(self):
@@ -42,7 +43,8 @@ class Map(object):
         for i in xrange(w):
             self.tiles.append([])
             for j in xrange(h):
-                self.tiles[i].append(Tile(i, j, r, self, Ground() if randint(1, 10) < 9 else Water()))
+                self.tiles[i].append(Tile(i, j, r, self, Ground() if randint(1, 10) < 8 else Water()))
+                self.tiles[i]
         for player in players:
             while True:
                 row = choice(self.tiles)
@@ -63,6 +65,14 @@ class Map(object):
                         tile.addUnit(unit)
                         self.units.append(unit)
                         break
+        gold_count = 0
+        while gold_count < 5:
+            row = choice(self.tiles)
+            tile = choice(row)
+            if tile.terrain.canHoldUnit:
+                tile.addUnit(Gold())
+                gold_count += 1
+                
 
     
     def getHexAt(self, x, y):
