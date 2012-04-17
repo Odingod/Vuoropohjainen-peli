@@ -10,8 +10,8 @@ class Unit(object):
         self.tile = tile
         self.moves = moves
         self.hp = hp
-		self.damage = damage
-		self.range = range
+        self.damage = damage
+        self.range = range
         self.owner = owner
 
     def __saveable__(self):
