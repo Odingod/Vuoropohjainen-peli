@@ -57,7 +57,7 @@ class Player:
         except AttributeError:
             pass
         self.unitIndex += 1
-        if self.unitIndex == len(self.game.map.units):
+        if self.unitIndex >= len(self.game.map.units):
             print 'full', self.unitIndex
             self.unitIndex = -1 
             self.printableUnitIndex = 0
