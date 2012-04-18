@@ -52,6 +52,7 @@ class Player:
         self.game.nextPlayerAction()
     
     def cycleUnits(self):
+        print self.game.map.units
         try:
             self.currentUnit.tile.setChosen(False)
         except AttributeError:
@@ -63,7 +64,7 @@ class Player:
             self.printableUnitIndex = 0
             self.currentUnit = None
         elif self.game.map.units[self.unitIndex].owner != self:
-            print 'enemy', self.unitIndex
+            print 'enemy', self.unitIndex, self.game.map.units[self.unitIndex], self.game.map.units[self.unitIndex].owner
             self.cycleUnits()
         else:
             print 'own', self.unitIndex
@@ -103,6 +104,8 @@ class AIPlayer(Player):
         self.unitIndex = -1
         self.cycleUnits()
         while self.currentUnit:
+            if self.currentUnit.id == "settlement":
+                self.currentUnit.recruit("tank")
             self.currentUnit.tile.ensureVisible()
             import time
             
