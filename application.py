@@ -129,6 +129,14 @@ class Game:
             return True
         return False
 
+    def attackAction(self, fun):
+        if isinstance(self.currentPlayer, HumanPlayer):
+            unit = self.currentPlayer.currentUnit
+            unit.tile.setChosenByDist(unit.range)
+            self.map.addAction(partial(unit.attackTile, fun=fun))
+            return True
+        return False
+
     def buildAction(self, building):
         if isinstance(self.currentPlayer, HumanPlayer):
             return self.currentPlayer.currentUnit.build(building)
@@ -225,16 +233,19 @@ class BottomDock(QDockWidget):
         self.nextUnitButton = QPushButton("Next Unit")
         self.nextTurnButton = QPushButton("Next Turn")
         self.moveButton = QPushButton("Move")
+        self.attackButton = QPushButton("Attack")
 
         self.moveButton.clicked.connect(self.moveAction)
         self.nextUnitButton.clicked.connect(self.nextUnitAction)
         self.nextTurnButton.clicked.connect(self.nextTurnAction)
+        self.attackButton.clicked.connect(self.attackAction)
 
         actionButtonGroupBox = QWidget()
         abLayout = QHBoxLayout()
         mar = abLayout.contentsMargins().bottom()
         abLayout.setContentsMargins(mar, mar, mar, 0)
         abLayout.addWidget(self.moveButton)
+        abLayout.addWidget(self.attackButton)
 
         self.build_farmButton = QPushButton("Build farm")
         self.build_tankButton = QPushButton("Build tank")
@@ -279,6 +290,9 @@ class BottomDock(QDockWidget):
 
     def moveAction(self):
         game.moveAction(self.updateTitle)
+
+    def attackAction(self):
+        game.attackAction(self.nextUnitAction)
 
     def nextUnitAction(self):
         if game.nextUnitAction():
