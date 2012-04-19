@@ -23,14 +23,25 @@ suurempia
 -valikkojärjestelmän rankempi virittely
 
 '''
+
 from PySide.QtCore import *
 from PySide.QtGui import *
 from Map import Map
 from Players import Player, HumanPlayer, AIPlayer
+from Units import Unit
+import Hexagon
 from functools import partial
 import sys
 from save import saveable, load
 import json
+
+
+def _showUnitDialog(units, event):
+    if game.singletonObject: return #only one pop up at a time
+    for unit in units:
+        if unit.owner == game.currentPlayer:
+            game.currentPlayer.currentUnit = unit
+            game.singletonObject = UnitActionForm()
 
 class Game:
     def __init__(self):
@@ -40,6 +51,7 @@ class Game:
         self.playerIndex = -1 
         self.turn = 1
         self.players = []
+        self.singletonObject = None
 
     def __saveable__(self):
         """ Returns a saveable representation of the game. """
@@ -211,6 +223,60 @@ class NewGameDialog(QDialog):
         game.numPlayers = self.numPlayers.value()
         super(NewGameDialog, self).accept()
 
+# user is displayed commands for a unit
+class UnitActionForm(QDockWidget):
+    
+    def __init__(self, parent=None):
+        super(UnitActionForm, self).__init__(parent)
+        methods = {"Cancel":self.cancelAction,"Move":self.moveAction,"Build farm":lambda: self.buildAction('farm'),"Build tank":lambda: self.recruitAction('tank'),"Build wall":lambda: self.buildAction('wall')}
+        self.title = QLabel()
+        self.title.setIndent(10)
+        self.updateTitle()
+        self.setTitleBarWidget(self.title)
+
+        layout = QFormLayout()
+        actionButtonGroupBox = QWidget()
+        abLayout = QVBoxLayout()
+        abLayout.setContentsMargins(10,20,10,10)
+        for title in methods.keys():
+            btn = QPushButton(title, self)
+            btn.setMinimumSize(40,25)
+            btn.clicked.connect(methods[title])
+            abLayout.addWidget(btn)
+        actionButtonGroupBox.setLayout(abLayout)
+        #abLayout.setGeometry(event.globalX(),event.globalY(),200,350)
+        layout.addRow(actionButtonGroupBox)
+        self.dockWidget = QWidget()
+        self.dockWidget.setLayout(layout)
+        self.setWidget(self.dockWidget)
+        #self.addDockWidget(Qt.BottomDockWidgetArea, self.bottomDock)
+        self.show()
+
+    def updateTitle(self):
+        self.title.setText("Unit: %d   Turn: %d" % (game.currentPlayer.printableUnitIndex, game.turn))
+    
+    def buildAction(self, building):
+        if game.buildAction(building):
+            self.delete()
+    
+    def recruitAction(self, unit):
+        if game.recruitAction(unit):
+            self.delete()
+    
+    def moveAction(self):
+        game.moveAction(self.updateTitle)
+        self.delete()
+    
+    def cancelAction(self):
+        self.delete()
+    
+    def delete(self):
+        if game.singletonObject:
+            self.destroy()
+            #self.removeWidget()
+            game.singletonObject = None
+
+
 class BottomDock(QDockWidget):
     def __init__(self, parent):
         super(BottomDock, self).__init__(parent)
@@ -224,43 +290,17 @@ class BottomDock(QDockWidget):
         self.distButton = QPushButton("Pass")
         self.nextUnitButton = QPushButton("Next Unit")
         self.nextTurnButton = QPushButton("Next Turn")
-        self.moveButton = QPushButton("Move")
-
-        self.moveButton.clicked.connect(self.moveAction)
         self.nextUnitButton.clicked.connect(self.nextUnitAction)
         self.nextTurnButton.clicked.connect(self.nextTurnAction)
 
-        actionButtonGroupBox = QWidget()
-        abLayout = QHBoxLayout()
-        mar = abLayout.contentsMargins().bottom()
-        abLayout.setContentsMargins(mar, mar, mar, 0)
-        abLayout.addWidget(self.moveButton)
-
-        self.build_farmButton = QPushButton("Build farm")
-        self.build_tankButton = QPushButton("Build tank")
-        self.build_wallButton = QPushButton("Build wall")
-
-        self.build_farmButton.clicked.connect(
-                lambda: self.buildAction('farm'))
-        self.build_wallButton.clicked.connect(
-                lambda: self.buildAction('wall'))
-
-        self.build_tankButton.clicked.connect(
-                lambda: self.recruitAction('tank'))
-
-        abLayout.addWidget(self.build_farmButton)
-        abLayout.addWidget(self.build_tankButton)
-        abLayout.addWidget(self.build_wallButton)
-        actionButtonGroupBox.setLayout(abLayout)
-
         turnControlButtonGroupBox = QWidget()
         tcLayout = QHBoxLayout()
+        mar = tcLayout.contentsMargins().bottom()
         tcLayout.setContentsMargins(mar, 0, mar, mar)
         tcLayout.addWidget(self.nextUnitButton)
         tcLayout.addWidget(self.nextTurnButton)
         turnControlButtonGroupBox.setLayout(tcLayout)
 
-        layout.addRow(actionButtonGroupBox)
         layout.addRow(turnControlButtonGroupBox)
         bottomDockWidget = QWidget()
         bottomDockWidget.setLayout(layout)
@@ -269,33 +309,24 @@ class BottomDock(QDockWidget):
     def updateTitle(self):
         self.title.setText("Unit: %d   Turn: %d" % (game.currentPlayer.printableUnitIndex, game.turn))
 
-    def buildAction(self, building):
-        if game.buildAction(building):
-            self.nextUnitAction()
-
-    def recruitAction(self, unit):
-        if game.recruitAction(unit):
-            self.nextUnitAction()
-
-    def moveAction(self):
-        game.moveAction(self.updateTitle)
-
     def nextUnitAction(self):
         if game.nextUnitAction():
+            if game.singletonObject:
+                game.singletonObject.delete()
             self.updateTitle()
             self.enableButtons()
 
     def nextTurnAction(self):
         if game.nextTurnAction():
+            if game.singletonObject:
+                game.singletonObject.delete()
             self.updateTitle()
             self.enableButtons()
 
     def disableButtons(self):
-        self.moveButton.setEnabled(False)
         self.distButton.setEnabled(False)
 
     def enableButtons(self):
-        self.moveButton.setEnabled(True)
         self.distButton.setEnabled(True)
                 
 class MainWindow(QMainWindow):
@@ -355,7 +386,7 @@ if __name__ == "__main__":
     window = MainWindow()
     window.setWindowTitle("Super peli!")
     window.show()
-
+    Hexagon.showUnitDialog = _showUnitDialog
     # Have to do this manually here, after everything has been initialized,
     # because otherwise, the current unit might not be visible the first time
     # you start the game
