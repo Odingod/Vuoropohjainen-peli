@@ -5,13 +5,16 @@ Created on Jul 25, 2011
 @author: anttir
 '''
 from math import sqrt
-from PySide.QtGui import QMenu, QGraphicsPolygonItem, QPolygon, QBrush, QPen, QPixmap, QGraphicsPixmapItem
+from PySide.QtGui import QMenu, QGraphicsPolygonItem, QPolygon, QBrush, QPen, QPixmap, QGraphicsPixmapItem, QImage, QPainter, QPen
 from PySide.QtCore import QRect, QPoint, Qt
 from functools import partial
 from Terrains import *
 from Units import Unit
+from Players import Player
 from save import saveable, load
 import heapq
+
+showUnitDialog = None
 
 class Hexagon(object):
     neighbor_di = (0, 1, 1, 0, -1, -1)
@@ -138,6 +141,8 @@ class Tile(Hexagon, QGraphicsPolygonItem):
     
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
+            if self.units:
+                showUnitDialog(self.units, event)
             self.map.tellClick(self.i, self.j)
             self.scene().update()
         if event.button() == Qt.RightButton:
@@ -264,7 +269,15 @@ class Tile(Hexagon, QGraphicsPolygonItem):
     def addUnit(self, unit):
         unit.tile = self
         self.units.append(unit)
-        image = QGraphicsPixmapItem(QPixmap(unit.image), self)
+        img = QImage(unit.image)
+        if unit.owner:
+            rect = img.rect()
+            painter = QPainter(img)
+            painter.setPen(unit.owner.unitColor())
+            painter.drawEllipse(rect)
+            painter.end()
+        image = QGraphicsPixmapItem(QPixmap(img), self)
+        #image = QGraphicsPixmapItem(QPixmap(unit.image), self)
         image.setOffset(self.x + 12, self.y + 10)
         self.unitImages.append(image)
     

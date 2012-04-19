@@ -1,3 +1,7 @@
+
+
+from PySide.QtCore import Qt
+
 class Player:
     count = 0
     loadedPlayers = {}
@@ -69,7 +73,11 @@ class Player:
             print 'own', self.unitIndex
             self.currentUnit = self.game.map.units[self.unitIndex]
             self.printableUnitIndex += 1
-        
+
+    def unitColor(self):
+        unitColors = [Qt.black,Qt.blue, Qt.red, Qt.green, Qt.yellow, Qt.white]
+        return unitColors[self.id] if self.id < len(unitColors) else Qt.black
+
 class HumanPlayer(Player):
     def __init__(self, game):
         Player.__init__(self, game)
