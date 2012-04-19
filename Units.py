@@ -44,9 +44,6 @@ class Unit(object):
         self.tile.setChosenByDist(-1)
         self.tile.ensureVisible()
         QCoreApplication.instance().processEvents()
-    
-    def unitDialog(self):
-        showUnitDialog(self)
 
     def build(self, *args):
         print 'This unit cannot build!'
