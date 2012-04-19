@@ -94,8 +94,8 @@ class Unit(object):
         return True
 
 class Building(Unit):
-    def __init__(self, tile=None, owner=None):
-        Unit.__init__(self, 'builting', QImage('castle_30x30.png'), tile, (0), 100, 0, (0), owner)
+    def __init__(self, name="Building", image="castle_30x30.png",  tile=None, move=[], hp=100, owner=None):
+        Unit.__init__(self, name, QImage(image), tile, move, hp, 0, (0), owner)
 
     def move(self, i=None, j=None, ai=False):
         print "can't move a building"
