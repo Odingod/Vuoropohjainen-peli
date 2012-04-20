@@ -65,7 +65,7 @@ class Unit(object):
             print 'That unit is out of your range.'
             return False
 
-        return other.take_damage(self.damage)
+        return other.takeDamage(self.damage)
 
     def attackTile(self, i, j, fun=None):
         units = self.tile.map.tiles[i][j].units
@@ -82,19 +82,22 @@ class Unit(object):
         self.tile.setChosenByDist(0)
         return False
 
-    def take_damage(self, amount):
+    def takeDamage(self, amount):
         amount = min(amount, self.hp)
         self.hp -= amount
 
         if self.hp == 0:
-            print '{0} died!'.format(self.id)
-            self.tile.removeUnit(self)
-            self.tile.map.units.remove(self)
-            # TODO: Is player defeated?
+            self.remove()
         else:
             print '{0} took {1} damage!'.format(self.id, amount)
 
         return True
+
+    def remove(self):
+        print '{0} died!'.format(self.id)
+        self.tile.removeUnit(self)
+        self.owner.removeUnit(self)
+        self.tile.map.units.remove(self)
 
 class Building(Unit):
     def __init__(self, tile=None, owner=None):
