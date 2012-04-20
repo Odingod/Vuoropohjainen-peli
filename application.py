@@ -35,7 +35,6 @@ import sys
 from save import saveable, load
 import json
 
-
 def _showUnitDialog(units, event):
     if game.singletonObject: return #only one pop up at a time
     for unit in units:
@@ -51,6 +50,8 @@ class Game:
         self.playerIndex = -1 
         self.turn = 1
         self.players = []
+        self.mode = 'single'
+        self.playerNames = []
         self.singletonObject = None
 
     def __saveable__(self):
@@ -196,6 +197,32 @@ class MainView(QGraphicsView):
             elif (self.dragPos - event.globalPos()).manhattanLength() > QApplication.startDragDistance():
                 self.dragging = True
 
+class PlayerNames(QDialog):
+    def __init__(self, parent):
+        super(PlayerNames, self).__init__(parent)
+        layout = QFormLayout()
+        self.texts = []
+        
+        for i in range(game.numPlayers):
+            layout.addRow(QLabel('%s %i' % ('Player ', i)))
+            self.texts.append(QLineEdit())
+            layout.addRow(self.texts[i])
+
+        buttons = QDialogButtonBox(QDialogButtonBox.Ok | \
+                                   QDialogButtonBox.Cancel)
+        buttons.accepted.connect(self.accept)
+        buttons.rejected.connect(self.reject)
+        
+        layout.addRow(buttons)
+        self.setLayout(layout)
+    
+    def accept(self):
+        for i in range(game.numPlayers):
+            text = self.texts[i].text()
+            game.playerNames.append(text)
+        super(PlayerNames, self).accept()
+
+
 class NewGameDialog(QDialog):
     def __init__(self, parent):
         super(NewGameDialog, self).__init__(parent)
@@ -208,9 +235,13 @@ class NewGameDialog(QDialog):
         self.numPlayers.setValue(1)
         
         
-        buttons = QDialogButtonBox(QDialogButtonBox.Ok | \
-            QDialogButtonBox.Cancel)
-        buttons.accepted.connect(self.accept)
+        buttons = QDialogButtonBox(QDialogButtonBox.Cancel)
+        btn1 = QPushButton('Single Player', self)
+        btn2 = QPushButton('Multi Player', self)
+        btn1.clicked.connect(self.single)
+        btn2.clicked.connect(self.multi)
+        buttons.addButton(btn1, QDialogButtonBox.ActionRole)
+        buttons.addButton(btn2, QDialogButtonBox.ActionRole)
         buttons.rejected.connect(self.reject)
 
         layout.addRow("Number Of Units", self.numUnits)
@@ -218,14 +249,19 @@ class NewGameDialog(QDialog):
         layout.addRow(buttons)
         self.setLayout(layout)
 
-    def accept(self):
+    def single(self):
+        game.numUnits = self.numUnits.value()
+        game.numPlayers = self.numPlayers.value()
+        super(NewGameDialog, self).accept()
+
+    def multi(self):
+        game.mode = 'multi'
         game.numUnits = self.numUnits.value()
         game.numPlayers = self.numPlayers.value()
         super(NewGameDialog, self).accept()
 
 # user is displayed commands for a unit
 class UnitActionForm(QDockWidget):
-    
     def __init__(self, parent=None):
         super(UnitActionForm, self).__init__(parent)
         methods = {"Cancel":self.cancelAction,"Move":self.moveAction,"Build farm":lambda: self.buildAction('farm'),"Build tank":lambda: self.recruitAction('tank'),"Build wall":lambda: self.buildAction('wall')}
@@ -244,16 +280,15 @@ class UnitActionForm(QDockWidget):
             btn.clicked.connect(methods[title])
             abLayout.addWidget(btn)
         actionButtonGroupBox.setLayout(abLayout)
-        #abLayout.setGeometry(event.globalX(),event.globalY(),200,350)
         layout.addRow(actionButtonGroupBox)
         self.dockWidget = QWidget()
         self.dockWidget.setLayout(layout)
         self.setWidget(self.dockWidget)
-        #self.addDockWidget(Qt.BottomDockWidgetArea, self.bottomDock)
         self.show()
 
     def updateTitle(self):
         self.title.setText("Unit: %d   Turn: %d" % (game.currentPlayer.printableUnitIndex, game.turn))
+        mainW.bottomDock.updateTitle()
     
     def buildAction(self, building):
         if game.buildAction(building):
@@ -264,8 +299,8 @@ class UnitActionForm(QDockWidget):
             self.delete()
     
     def moveAction(self):
-        game.moveAction(self.updateTitle)
-        self.delete()
+        if game.moveAction(self.updateTitle):
+            self.delete()
     
     def cancelAction(self):
         self.delete()
@@ -273,7 +308,6 @@ class UnitActionForm(QDockWidget):
     def delete(self):
         if game.singletonObject:
             self.destroy()
-            #self.removeWidget()
             game.singletonObject = None
 
 
@@ -367,10 +401,14 @@ class MainWindow(QMainWindow):
             game = Game()
             newGameDialog = NewGameDialog(self)
             r = newGameDialog.exec_()
-
             if r == 0:
                 self.close()
                 sys.exit()
+            if game.mode == 'multi':
+                names = PlayerNames(self) #get player names
+                if not names.exec_():
+                    self.close()
+                    sys.exit()
 
             game.start()
 
@@ -381,9 +419,11 @@ class MainWindow(QMainWindow):
         game.nextPlayerAction()
 
 if __name__ == "__main__":
+    global mainW
     app = QApplication([])
 
     window = MainWindow()
+    mainW = window
     window.setWindowTitle("Super peli!")
     window.show()
     Hexagon.showUnitDialog = _showUnitDialog

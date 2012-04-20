@@ -12,6 +12,8 @@ class Player:
         self.myTurn = False
         self.game = game
         self.printableUnitIndex = 0
+        if game.mode == 'multi':
+            self.name = game.playerNames[self.id-1]
 
     def __saveable__(self):
         d = {}
