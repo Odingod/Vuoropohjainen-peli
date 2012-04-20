@@ -212,7 +212,8 @@ class Tile(Hexagon, QGraphicsPolygonItem):
             used.add(current)
 
             if (length > dist) or (not current.terrain.canHoldUnit) or \
-                    (curdist > dist - length and not getReachables):
+                    (curdist > dist - length and not getReachables) or \
+                    ((current.i != i or current.j != j) and current.units):
                 continue
 
             reachables.add(current)
