@@ -120,6 +120,7 @@ class HumanPlayer(Player):
 class AIPlayer(Player):
     def __init__(self, game):
         Player.__init__(self, game)
+        self.unitIndex = -1
     
     def doTurn(self):
         self.unitIndex = -1

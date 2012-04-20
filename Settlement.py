@@ -11,7 +11,7 @@ from PySide.QtGui import QImage
 class Settlement(Building):
     def __init__(self, name, image="castle_30x30.png", tile=None,
             population=1000, owner=None, map=None):
-        Building.__init__(self, 'settlement', QImage(image), tile, [], 100, owner=owner)
+        Building.__init__(self, 'settlement', QImage(image), tile, moves=[], hp=100, owner=owner)
         self.population = population
         self.main_building = 1
         self.barracks = 0

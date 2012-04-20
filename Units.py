@@ -115,8 +115,9 @@ class Unit(object):
         self.tile.map.units.remove(self)
 
 class Building(Unit):
-    def __init__(self, tile=None, owner=None):
-        Unit.__init__(self, 'building', QImage('castle_30x30.png'), tile, (), 100, 0, (), owner)
+    def __init__(self, *args, **kwargs):
+        kwargs.pop('moves', None)
+        Unit.__init__(self, *args, moves=(), **kwargs)
 
     def move(self, i=None, j=None, ai=False):
         print "can't move a building"
