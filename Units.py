@@ -47,6 +47,9 @@ class Unit(object):
         self.tile.setChosenByDist(-1)
         self.tile.ensureVisible()
         QCoreApplication.instance().processEvents()
+    
+    def unitDialog(self):
+        showUnitDialog(self)
 
     def build(self, *args):
         print 'This unit cannot build!'
@@ -106,6 +109,7 @@ class Tank(Unit):
         Unit.__init__(self, 'tank', QImage('alien1.png'), tile, (1, 2, 3), 25, 20, (1,2), owner)
     
     def move(self, i, j, fun=None, ai=False):
+        print 'moving to', i, j
         if not self.tile.map.tiles[i][j].chosen and not ai:
             print "You can't move there"
             self.tile.setChosenByDist(0)
