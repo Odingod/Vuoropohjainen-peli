@@ -40,7 +40,8 @@ def _showUnitDialog(units, event):
     for unit in units:
         if unit.owner == game.currentPlayer:
             game.currentPlayer.currentUnit = unit
-            game.singletonObject = UnitActionForm()
+            game.singletonObject = UnitActionForm(mainW)
+            game.singletonObject.exec_()
 
 class Game:
     def __init__(self):
@@ -261,14 +262,13 @@ class NewGameDialog(QDialog):
         super(NewGameDialog, self).accept()
 
 # user is displayed commands for a unit
-class UnitActionForm(QDockWidget):
+class UnitActionForm(QDialog):
     def __init__(self, parent=None):
         super(UnitActionForm, self).__init__(parent)
         methods = {"Cancel":self.cancelAction,"Move":self.moveAction,"Build farm":lambda: self.buildAction('farm'),"Build tank":lambda: self.recruitAction('tank'),"Build wall":lambda: self.buildAction('wall')}
         self.title = QLabel()
         self.title.setIndent(10)
         self.updateTitle()
-        self.setTitleBarWidget(self.title)
 
         layout = QFormLayout()
         actionButtonGroupBox = QWidget()
@@ -281,35 +281,40 @@ class UnitActionForm(QDockWidget):
             abLayout.addWidget(btn)
         actionButtonGroupBox.setLayout(abLayout)
         layout.addRow(actionButtonGroupBox)
-        self.dockWidget = QWidget()
-        self.dockWidget.setLayout(layout)
-        self.setWidget(self.dockWidget)
-        self.show()
+        self.setLayout(layout)
 
     def updateTitle(self):
         self.title.setText("Unit: %d   Turn: %d" % (game.currentPlayer.printableUnitIndex, game.turn))
         mainW.bottomDock.updateTitle()
     
     def buildAction(self, building):
+        self.hide()
         if game.buildAction(building):
             self.delete()
+        else:
+            self.show()
     
     def recruitAction(self, unit):
+        self.hide()
         if game.recruitAction(unit):
             self.delete()
+        else:
+            self.show()
     
     def moveAction(self):
+        self.hide()
         if game.moveAction(self.updateTitle):
             self.delete()
+        else:
+            self.show()
     
     def cancelAction(self):
         self.delete()
     
     def delete(self):
         if game.singletonObject:
-            self.destroy()
             game.singletonObject = None
-
+            self.done(0)
 
 class BottomDock(QDockWidget):
     def __init__(self, parent):
