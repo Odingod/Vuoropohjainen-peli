@@ -5,7 +5,7 @@ from Players import Player
 from functools import partial
 
 class Unit(object):
-    def __init__(self, id, image, tile=None, moves=(0, 1), hp=30, damage=10, range=(1), owner=None):
+    def __init__(self, id, image, tile=None, moves=(0, 1), hp=30, damage=10, range=(1,), owner=None):
         self.id = id
         self.image = image
         self.tile = tile
