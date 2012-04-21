@@ -12,6 +12,7 @@ class Player:
         self.myTurn = False
         self.game = game
         self.printableUnitIndex = 0
+        self.defeated = False
         if game.mode == 'multi':
             self.name = game.playerNames[self.id-1]
 
@@ -63,7 +64,7 @@ class Player:
         except AttributeError:
             pass
         self.unitIndex += 1
-        if self.unitIndex == len(self.game.map.units):
+        if self.unitIndex >= len(self.game.map.units):
             print 'full', self.unitIndex
             self.unitIndex = -1 
             self.printableUnitIndex = 0
@@ -79,6 +80,17 @@ class Player:
     def unitColor(self):
         unitColors = [Qt.black,Qt.blue, Qt.red, Qt.green, Qt.yellow, Qt.white]
         return unitColors[self.id] if self.id < len(unitColors) else Qt.black
+
+    def removeUnit(self, unit):
+        i = self.game.map.units.index(unit)
+
+        if i <= self.unitIndex:
+            self.unitIndex -= 1
+            self.printableUnitIndex -= 1
+
+        if len(filter(lambda x: x.owner == self, self.game.map.units)) == 1:
+            self.defeated = True
+            # TODO: Actually defeat the player.
 
 class HumanPlayer(Player):
     def __init__(self, game):
@@ -108,6 +120,7 @@ class HumanPlayer(Player):
 class AIPlayer(Player):
     def __init__(self, game):
         Player.__init__(self, game)
+        self.unitIndex = -1
     
     def doTurn(self):
         self.unitIndex = -1

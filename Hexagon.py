@@ -141,9 +141,10 @@ class Tile(Hexagon, QGraphicsPolygonItem):
     
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
-            if self.units:
+            if self.map.waitingInput:
+                self.map.tellClick(self.i, self.j)
+            elif self.units:
                 showUnitDialog(self.units, event)
-            self.map.tellClick(self.i, self.j)
             self.scene().update()
         if event.button() == Qt.RightButton:
             self.getContextMenu().exec_(event.screenPos())
@@ -211,7 +212,8 @@ class Tile(Hexagon, QGraphicsPolygonItem):
             used.add(current)
 
             if (length > dist) or (not current.terrain.canHoldUnit) or \
-                    (curdist > dist - length and not getReachables):
+                    (curdist > dist - length and not getReachables) or \
+                    ((current.i != i or current.j != j) and current.units):
                 continue
 
             reachables.add(current)
