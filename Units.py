@@ -80,6 +80,14 @@ class Unit(object):
             print 'That unit is out of your range.'
             return False
 
+        if not other.owner:
+            print 'Cannot attack that unit.'
+            return False
+
+        if other.owner == self.owner:
+            print 'Cannot attack own units.'
+            return False
+
         return other.takeDamage(self.damage)
 
     def attackTile(self, i, j, fun=None):
