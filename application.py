@@ -151,6 +151,10 @@ class Game:
 
     def attackAction(self, fun=None):
         if isinstance(self.currentPlayer, HumanPlayer):
+            if not self.currentPlayer.currentUnit.range:
+                print 'This unit cannot attack!'
+                return False
+
             unit = self.currentPlayer.currentUnit
             unit.tile.setChosenByDist(unit.range)
             self.map.addAction(partial(unit.attackTile, fun=fun))
