@@ -99,9 +99,13 @@ class Game:
         return load(cls, d)
 
     def start(self):
-        self.players.append(HumanPlayer(self))
-        for x in xrange(self.numPlayers - 1):
-            self.players.append(AIPlayer(self))
+        if game.mode == 'single':
+            self.players.append(HumanPlayer(self))
+            for x in xrange(self.numPlayers - 1):
+                self.players.append(AIPlayer(self))
+        else:
+            for x in xrange(self.numPlayers):
+                self.players.append(HumanPlayer(self))
         self.map.createSquareMap(self.numUnits, self.players, 10, 10, 50)
         self.numUnits *= self.numPlayers
         
