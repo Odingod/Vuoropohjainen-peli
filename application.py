@@ -38,7 +38,7 @@ import json
 def _showUnitDialog(units, event):
     if game.singletonObject: return #only one pop up at a time
     for unit in units:
-        if unit.owner == game.currentPlayer:
+        if unit.owner == game.currentPlayer and unit in game.turnUnits:
             game.currentPlayer.currentUnit = unit
             game.singletonObject = UnitActionForm(mainW)
             game.singletonObject.exec_()
@@ -54,6 +54,7 @@ class Game:
         self.mode = 'single'
         self.playerNames = []
         self.singletonObject = None
+        self.turnUnits = []
 
     def __saveable__(self):
         """ Returns a saveable representation of the game. """
@@ -112,12 +113,16 @@ class Game:
         
     def cyclePlayers(self):
         self.playerIndex += 1
+        self.turnUnits = []
         if self.playerIndex == self.numPlayers:
             self.playerIndex = -1 
+            self.turnUnits = []
             self.currentPlayer = None # None indicates the turn is over
         else:
             self.currentPlayer = self.players[self.playerIndex]
-    
+            if isinstance(self.currentPlayer, HumanPlayer):
+                self.turnUnits = filter(lambda x: x.owner == self.currentPlayer, self.map.units)
+
     def nextPlayerAction(self):
         self.cyclePlayers()
         if self.currentPlayer:
@@ -372,7 +377,10 @@ class BottomDock(QDockWidget):
         self.setWidget(bottomDockWidget)
 
     def updateTitle(self):
-        self.title.setText("Unit: %d   Turn: %d" % (game.currentPlayer.printableUnitIndex, game.turn))
+        if game.mode=='single':
+            self.title.setText("Unit: %d   Turn: %d" % (game.currentPlayer.printableUnitIndex, game.turn))
+        else:
+            self.title.setText("Player: %s   Turn: %d" % (game.currentPlayer.name, game.turn))
 
     def nextUnitAction(self):
         if game.nextUnitAction():
