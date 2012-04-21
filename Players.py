@@ -14,7 +14,7 @@ class Player:
         self.printableUnitIndex = 0
         self.defeated = False
         if game.mode == 'multi':
-            self.name = game.playerNames[self.id-1]
+            self.name = game.playerNames.pop()
 
     def __saveable__(self):
         d = {}
