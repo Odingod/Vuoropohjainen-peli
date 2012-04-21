@@ -54,7 +54,6 @@ class Game:
         self.mode = 'single'
         self.playerNames = []
         self.singletonObject = None
-        self.turnUnits = []
 
     def __saveable__(self):
         """ Returns a saveable representation of the game. """
@@ -113,10 +112,8 @@ class Game:
         
     def cyclePlayers(self):
         self.playerIndex += 1
-        self.turnUnits = []
         if self.playerIndex == self.numPlayers:
             self.playerIndex = -1 
-            self.turnUnits = []
             self.currentPlayer = None # None indicates the turn is over
         else:
             self.currentPlayer = self.players[self.playerIndex]

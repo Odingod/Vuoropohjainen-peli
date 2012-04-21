@@ -13,6 +13,7 @@ class Player:
         self.game = game
         self.printableUnitIndex = 0
         self.unitCount = 0
+        self.doneUnits = set()
         self.defeated = False
         if game.mode == 'multi':
             self.name = game.playerNames.pop()
