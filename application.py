@@ -54,6 +54,8 @@ class Game:
         self.mode = 'single'
         self.playerNames = []
         self.singletonObject = None
+        self.turnUnits = []
+        self.mapSize = 0 #small
 
     def __saveable__(self):
         """ Returns a saveable representation of the game. """
@@ -107,7 +109,12 @@ class Game:
         else:
             for x in xrange(self.numPlayers):
                 self.players.append(HumanPlayer(self))
-        self.map.createSquareMap(self.numUnits, self.players, 10, 10, 50)
+        if self.mapSize == 0:
+            self.map.createSquareMap(self.numUnits, self.players, 10, 10, 50)
+        elif self.mapSize == 1:
+            self.map.createSquareMap(self.numUnits, self.players, 20, 20, 35)
+        else:
+            self.map.createSquareMap(self.numUnits, self.players, 30, 30, 20)
         self.numUnits *= self.numPlayers
         
     def cyclePlayers(self):
@@ -253,6 +260,18 @@ class NewGameDialog(QDialog):
         self.numPlayers.setRange(1, 4)
         self.numPlayers.setValue(1)
         
+        mapSize = QGroupBox('Select Map Size')
+        lbl = QLabel('Select Map Size')
+        box = QVBoxLayout()
+        b1 = QRadioButton('Small')
+        b2 = QRadioButton('Medium')
+        b3 = QRadioButton('Huge')
+        self.btns = [b1,b2,b3]
+        b1.setChecked(True)
+        box.addWidget(b1)
+        box.addWidget(b2)
+        box.addWidget(b3)
+        mapSize.setLayout(box)
         
         buttons = QDialogButtonBox(QDialogButtonBox.Cancel)
         btn1 = QPushButton('Single Player', self)
@@ -265,19 +284,21 @@ class NewGameDialog(QDialog):
 
         layout.addRow("Number Of Units", self.numUnits)
         layout.addRow("Number Of Players", self.numPlayers)
+        layout.addRow(mapSize)
         layout.addRow(buttons)
         self.setLayout(layout)
 
     def single(self):
         game.numUnits = self.numUnits.value()
         game.numPlayers = self.numPlayers.value()
+        for i in range(len(self.btns)):
+            if self.btns[i].isChecked():
+                game.mapSize = i
         super(NewGameDialog, self).accept()
 
     def multi(self):
         game.mode = 'multi'
-        game.numUnits = self.numUnits.value()
-        game.numPlayers = self.numPlayers.value()
-        super(NewGameDialog, self).accept()
+        self.single()
 
 # user is displayed commands for a unit
 class UnitActionForm(QDialog):
@@ -292,10 +313,7 @@ class UnitActionForm(QDialog):
                 ('Build wall', lambda: self.buildAction('wall')),
                 ('Build settlement', lambda: self.buildAction('settlement')),
             )
-        self.title = QLabel()
-        self.title.setIndent(10)
-        self.updateTitle()
-
+        
         layout = QFormLayout()
         actionButtonGroupBox = QWidget()
         abLayout = QVBoxLayout()
@@ -310,9 +328,8 @@ class UnitActionForm(QDialog):
         self.setLayout(layout)
 
     def updateTitle(self):
-        self.title.setText("Unit: %d   Turn: %d" % (game.currentPlayer.printableUnitIndex, game.turn))
         mainW.bottomDock.updateTitle()
-    
+
     def buildAction(self, building):
         self.hide()
         if game.buildAction(building):
@@ -458,6 +475,7 @@ if __name__ == "__main__":
     window.setWindowTitle("Super peli!")
     window.show()
     Hexagon.showUnitDialog = _showUnitDialog
+    Hexagon.mapSize = game.mapSize
     # Have to do this manually here, after everything has been initialized,
     # because otherwise, the current unit might not be visible the first time
     # you start the game
