@@ -15,6 +15,8 @@ class Player:
         self.unitCount = 0
         self.doneUnits = set()
         self.defeated = False
+        self.mine_count = 0
+        self.treasury = 1000
         if game.mode == 'multi':
             self.name = game.playerNames.pop()
 
@@ -113,6 +115,8 @@ class HumanPlayer(Player):
             self.endTurn()
     
     def endTurn(self):
+        self.treasury += 100*self.mine_count
+        print 100*self.mine_count, "new gold brought into treasury which has now", self.treasury, "gold"
         print 'ending turn'
         Player.endTurn(self)
     
@@ -145,4 +149,5 @@ class AIPlayer(Player):
                     pass
             
             self.cycleUnits()
+        self.treasury += 100*self.mine_count
         self.endTurn()

@@ -34,10 +34,14 @@ class Settlement(Building):
         return True
 
     def recruit(self, unit):
-        if unit == "tank":
+        treasury = self.owner.treasury
+        if treasury < 100:
+            print "Not enough gold. You have", treasury, "and 100 is needed"
+        if unit == "tank" and treasury >= 100:
             if self.population > 2500:
                 unit = Tank(owner=self.owner)
                 self.tile.addUnit(unit)
+                treasury -= 100
             
             unit = Tank(owner=self.owner)
             print self.tile.getUnit()
@@ -55,12 +59,13 @@ class Settlement(Building):
                     if tile.canBuild():
                         tile.addUnit(unit)
                         self.map.units.append(unit)
+                        treasury -= 100
                         self.onwer.unitDone()
                         return True
                 print "No empty tiles"
                 return False
                     
-
+            
             self.owner.unitDone()
             return True
 
