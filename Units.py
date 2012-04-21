@@ -57,8 +57,7 @@ class Unit(object):
             if fun:
                 fun()
 
-            if not ai:
-                self.owner.nextUnitAction()
+            self.owner.unitDone()
         else:
             print 'This unit can\'t go there'
             self.tile.map.addAction(self.move)
@@ -90,6 +89,7 @@ class Unit(object):
                 self.tile.setChosenByDist(-1)
                 if fun:
                     fun()
+                self.owner.unitDone()
                 return True
         else:
             print 'There is no unit in there'

@@ -38,7 +38,7 @@ import json
 def _showUnitDialog(units, event):
     if game.singletonObject: return #only one pop up at a time
     for unit in units:
-        if unit.owner == game.currentPlayer and unit in game.turnUnits:
+        if unit.owner == game.currentPlayer and unit not in unit.owner.doneUnits:
             game.currentPlayer.currentUnit = unit
             game.singletonObject = UnitActionForm(mainW)
             game.singletonObject.exec_()
@@ -358,16 +358,13 @@ class BottomDock(QDockWidget):
 
         layout = QFormLayout()
         self.distButton = QPushButton("Pass")
-        self.nextUnitButton = QPushButton("Next Unit")
         self.nextTurnButton = QPushButton("Next Turn")
-        self.nextUnitButton.clicked.connect(self.nextUnitAction)
         self.nextTurnButton.clicked.connect(self.nextTurnAction)
 
         turnControlButtonGroupBox = QWidget()
         tcLayout = QHBoxLayout()
         mar = tcLayout.contentsMargins().bottom()
         tcLayout.setContentsMargins(mar, 0, mar, mar)
-        tcLayout.addWidget(self.nextUnitButton)
         tcLayout.addWidget(self.nextTurnButton)
         turnControlButtonGroupBox.setLayout(tcLayout)
 
@@ -381,13 +378,6 @@ class BottomDock(QDockWidget):
             self.title.setText("Unit: %d   Turn: %d" % (game.currentPlayer.printableUnitIndex, game.turn))
         else:
             self.title.setText("Player: %s   Turn: %d" % (game.currentPlayer.name, game.turn))
-
-    def nextUnitAction(self):
-        if game.nextUnitAction():
-            if game.singletonObject:
-                game.singletonObject.delete()
-            self.updateTitle()
-            self.enableButtons()
 
     def nextTurnAction(self):
         if game.nextTurnAction():
@@ -469,6 +459,6 @@ if __name__ == "__main__":
     # Have to do this manually here, after everything has been initialized,
     # because otherwise, the current unit might not be visible the first time
     # you start the game
-    game.currentPlayer.currentUnit.tile.ensureVisible()
+    #game.currentPlayer.currentUnit.tile.ensureVisible()
 
     app.exec_()

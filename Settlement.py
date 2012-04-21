@@ -30,6 +30,7 @@ class Settlement(Building):
             print "no such building, available buildings: barracks, farm, wall"
             return False
 
+        self.owner.unitDone()
         return True
 
     def recruit(self, unit):
@@ -54,11 +55,13 @@ class Settlement(Building):
                     if tile.canBuild():
                         tile.addUnit(unit)
                         self.map.units.append(unit)
+                        self.onwer.unitDone()
                         return True
                 print "No empty tiles"
                 return False
                     
 
+            self.owner.unitDone()
             return True
 
         return False
