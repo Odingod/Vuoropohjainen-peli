@@ -54,6 +54,14 @@ class Map(object):
                     tile.addUnit(settlement)
                     self.units.append(settlement)
                     break
+            while True:
+                row = choice(self.tiles)
+                tile = choice(row)
+                if tile.terrain.canHoldUnit and not tile.units:
+                    builder = Builder(tile=tile, owner=player)
+                    tile.addUnit(builder)
+                    self.units.append(builder)
+                    break
 
         for i in xrange(numUnits):
             for player in players:

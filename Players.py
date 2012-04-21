@@ -12,6 +12,8 @@ class Player:
         self.myTurn = False
         self.game = game
         self.printableUnitIndex = 0
+        self.unitCount = 0
+        self.doneUnits = set()
         self.defeated = False
         if game.mode == 'multi':
             self.name = game.playerNames.pop()
@@ -82,11 +84,7 @@ class Player:
         return unitColors[self.id] if self.id < len(unitColors) else Qt.black
 
     def removeUnit(self, unit):
-        i = self.game.map.units.index(unit)
-
-        if i <= self.unitIndex:
-            self.unitIndex -= 1
-            self.printableUnitIndex -= 1
+        self.unitCount -= 1
 
         if len(filter(lambda x: x.owner == self, self.game.map.units)) == 1:
             self.defeated = True
@@ -99,18 +97,15 @@ class HumanPlayer(Player):
         self.currentUnit = None
     
     def doTurn(self):
+        self.doneUnits = set()
         Player.doTurn(self)
+        self.unitCount = len(filter(lambda u: u.owner == self, self.game.map.units))
         self.unitIndex = -1
-        self.nextUnitAction()
     
-    def nextUnitAction(self, *args):
-        self.cycleUnits()
-        print 'unit', self.currentUnit
-        print 'index', self.unitIndex
-        if self.currentUnit:
-            self.currentUnit.tile.setChosen(True)
-            self.currentUnit.tile.ensureVisible()
-        else:
+    def unitDone(self):
+        self.doneUnits.add(self.currentUnit)
+
+        if len(self.doneUnits) >= self.unitCount:
             self.endTurn()
     
     def endTurn(self):
@@ -121,6 +116,9 @@ class AIPlayer(Player):
     def __init__(self, game):
         Player.__init__(self, game)
         self.unitIndex = -1
+
+    def unitDone(self):
+        pass # Dummy function so we don't have to keep checking it's a human.
     
     def doTurn(self):
         self.unitIndex = -1

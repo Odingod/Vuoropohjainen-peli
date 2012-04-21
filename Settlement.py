@@ -9,7 +9,7 @@ import Map
 from PySide.QtGui import QImage
 
 class Settlement(Building):
-    def __init__(self, name, image="castle_30x30.png", tile=None,
+    def __init__(self, name='Random Settlement', image="castle_30x30.png", tile=None,
             population=1000, owner=None, map=None):
         Building.__init__(self, 'settlement', QImage(image), tile, moves=[], hp=100, owner=owner)
         self.population = population
@@ -30,6 +30,7 @@ class Settlement(Building):
             print "no such building, available buildings: barracks, farm, wall"
             return False
 
+        self.owner.unitDone()
         return True
 
     def recruit(self, unit):
@@ -54,11 +55,13 @@ class Settlement(Building):
                     if tile.canBuild():
                         tile.addUnit(unit)
                         self.map.units.append(unit)
+                        self.onwer.unitDone()
                         return True
                 print "No empty tiles"
                 return False
                     
 
+            self.owner.unitDone()
             return True
 
         return False
