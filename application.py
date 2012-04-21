@@ -326,6 +326,7 @@ class UnitActionForm(QDialog):
         actionButtonGroupBox.setLayout(abLayout)
         layout.addRow(actionButtonGroupBox)
         self.setLayout(layout)
+        self.updateTitle()
 
     def updateTitle(self):
         mainW.bottomDock.updateTitle()
@@ -353,7 +354,7 @@ class UnitActionForm(QDialog):
 
     def attackAction(self):
         self.hide()
-        if game.attackAction():
+        if game.attackAction(self.updateTitle):
             self.delete()
         else:
             self.show()
@@ -394,7 +395,8 @@ class BottomDock(QDockWidget):
 
     def updateTitle(self):
         if game.mode=='single':
-            self.title.setText("Unit: %d   Turn: %d" % (game.currentPlayer.printableUnitIndex, game.turn))
+            self.title.setText("Unit: %d/%d   Turn: %d" %
+                    (len(game.currentPlayer.doneUnits), game.currentPlayer.unitCount, game.turn))
         else:
             self.title.setText("Player: %s   Turn: %d" % (game.currentPlayer.name, game.turn))
 

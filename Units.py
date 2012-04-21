@@ -55,10 +55,10 @@ class Unit(object):
             self.tile.setChosenByDist(0)
         elif self.tile.map.tiles[i][j].terrain.canHoldUnit:
             self.move_to(i, j)
+            self.owner.unitDone()
+
             if fun:
                 fun()
-
-            self.owner.unitDone()
         else:
             print 'This unit can\'t go there'
             self.tile.map.addAction(self.move)
@@ -88,9 +88,11 @@ class Unit(object):
         if units:
             if self.attack(units[0]):
                 self.tile.setChosenByDist(-1)
+                self.owner.unitDone()
+
                 if fun:
                     fun()
-                self.owner.unitDone()
+
                 return True
         else:
             print 'There is no unit in there'
