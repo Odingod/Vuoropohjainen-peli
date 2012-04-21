@@ -133,3 +133,48 @@ class Melee(Unit):
 class Ranged(Unit):
     def __init__(self, tile=None, owner=None):
         Unit.__init__(self, 'ranged', QImage('ranged.png'), tile, (1, 2), 15, 15, (1, 2), owner)
+
+class Builder(Unit):
+    def __init__(self, tile=None, owner=None):
+        moves = (1, 2, 3)
+        hp = 10
+        damage = 0
+        range = (1,)
+        Unit.__init__(self, 'builder', QImage('builder.png'), tile=tile,
+                owner=owner, moves=moves, hp=hp, damage=damage, range=range)
+        from Settlement import *
+        self.buildings = {
+            'settlement': Settlement,
+        }
+        self.building = None
+
+    def build(self, building):
+        if building in self.buildings:
+            self.building = building
+            self.tile.map.addAction(self.doBuild)
+            self.tile.setChosenByReach(self.range)
+        else:
+            print 'Cannot build such unit.'
+            return False
+
+        return True
+
+    def doBuild(self, i, j):
+        if not self.build:
+            print 'Nothing to build! Something is wrong.'
+            self.tile.setChosenByDist(0)
+            return False
+
+        if not self.tile.map.tiles[i][j].chosen:
+            print 'Cannot build there!'
+            self.tile.setChosenByDist(0)
+            return False
+        
+        self.tile.setChosenByDist(-1)
+        tile = self.tile.map.tiles[i][j]
+        u = self.buildings[self.building](tile=tile, owner=self.owner)
+        self.building = None
+        self.tile.map.units.append(u)
+        tile.addUnit(u)
+        self.owner.unitCount += 1
+        self.owner.unitDone()

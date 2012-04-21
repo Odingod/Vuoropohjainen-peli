@@ -285,7 +285,8 @@ class UnitActionForm(QDialog):
                 ('Attack', self.attackAction),
                 ('Build farm', lambda: self.buildAction('farm')),
                 ('Build tank', lambda: self.buildAction('tank')),
-                ('Build wall', lambda: self.buildAction('wall'))
+                ('Build wall', lambda: self.buildAction('wall')),
+                ('Build settlement', lambda: self.buildAction('settlement')),
             )
         self.title = QLabel()
         self.title.setIndent(10)

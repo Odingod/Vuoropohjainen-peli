@@ -9,7 +9,7 @@ import Map
 from PySide.QtGui import QImage
 
 class Settlement(Building):
-    def __init__(self, name, image="castle_30x30.png", tile=None,
+    def __init__(self, name='Random Settlement', image="castle_30x30.png", tile=None,
             population=1000, owner=None, map=None):
         Building.__init__(self, 'settlement', QImage(image), tile, moves=[], hp=100, owner=owner)
         self.population = population
