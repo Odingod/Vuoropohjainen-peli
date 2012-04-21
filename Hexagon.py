@@ -277,6 +277,11 @@ class Tile(Hexagon, QGraphicsPolygonItem):
             painter = QPainter(img)
             painter.setPen(unit.owner.unitColor())
             painter.drawEllipse(rect)
+
+            hpWidth = 20
+            greenWidth = unit.hp / float(unit.maxHp) * hpWidth
+            painter.fillRect(5, 5, greenWidth, 5, Qt.green)
+            painter.fillRect(5 + greenWidth, 5, hpWidth-greenWidth, 5, Qt.red)
             painter.end()
         image = QGraphicsPixmapItem(QPixmap(img), self)
         #image = QGraphicsPixmapItem(QPixmap(unit.image), self)

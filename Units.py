@@ -11,6 +11,7 @@ class Unit(object):
         self.tile = tile
         self.moves = moves
         self.hp = hp
+        self.maxHp = hp
         self.damage = damage
         self.range = range
         self.owner = owner
@@ -105,6 +106,9 @@ class Unit(object):
             self.remove()
         else:
             print '{0} took {1} damage!'.format(self.id, amount)
+            # Redraw the hp bar
+            self.tile.removeUnit(self)
+            self.tile.addUnit(self)
 
         return True
 
@@ -139,20 +143,21 @@ class Builder(Unit):
         moves = (1, 2, 3)
         hp = 10
         damage = 0
-        range = (1,)
+        range = ()
         Unit.__init__(self, 'builder', QImage('builder.png'), tile=tile,
                 owner=owner, moves=moves, hp=hp, damage=damage, range=range)
         from Settlement import *
         self.buildings = {
             'settlement': Settlement,
         }
+        self.buildRange = (1,)
         self.building = None
 
     def build(self, building):
         if building in self.buildings:
             self.building = building
             self.tile.map.addAction(self.doBuild)
-            self.tile.setChosenByReach(self.range)
+            self.tile.setChosenByReach(self.buildRange)
         else:
             print 'Cannot build such unit.'
             return False
