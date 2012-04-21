@@ -15,6 +15,7 @@ from save import saveable, load
 import heapq
 
 showUnitDialog = None
+mapSize = 1
 
 class Hexagon(object):
     neighbor_di = (0, 1, 1, 0, -1, -1)
@@ -269,9 +270,10 @@ class Tile(Hexagon, QGraphicsPolygonItem):
             reachable.setChosen(True)
     
     def addUnit(self, unit):
+        global mapSize
         unit.tile = self
         self.units.append(unit)
-        img = QImage(unit.image)
+        img = QImage(unit.image).scaledToWidth(self.getImageRect().width())
         if unit.owner:
             rect = img.rect()
             painter = QPainter(img)
@@ -279,8 +281,7 @@ class Tile(Hexagon, QGraphicsPolygonItem):
             painter.drawEllipse(rect)
             painter.end()
         image = QGraphicsPixmapItem(QPixmap(img), self)
-        #image = QGraphicsPixmapItem(QPixmap(unit.image), self)
-        image.setOffset(self.x + 12, self.y + 10)
+        image.setOffset(self.x + 12/(2*mapSize), self.y + 10/(2*mapSize))
         self.unitImages.append(image)
     
     def getUnit(self):
