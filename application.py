@@ -398,7 +398,7 @@ class BottomDock(QDockWidget):
             self.title.setText("Unit: %d/%d   Turn: %d" %
                     (len(game.currentPlayer.doneUnits), game.currentPlayer.unitCount, game.turn))
         else:
-            self.title.setText("Player: %s   Turn: %d" % (game.currentPlayer.name, game.turn))
+            self.title.setText("Player: %s, Color: %s,   Turn: %d" % (game.currentPlayer.name, game.currentPlayer.printableUnitColor() ,game.turn))
 
     def nextTurnAction(self):
         if game.nextTurnAction():

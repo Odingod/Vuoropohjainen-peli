@@ -83,6 +83,10 @@ class Player:
         unitColors = [Qt.black,Qt.blue, Qt.red, Qt.green, Qt.yellow, Qt.white]
         return unitColors[self.id] if self.id < len(unitColors) else Qt.black
 
+    def printableUnitColor(self):
+        unitColors = ['black','blue', 'red', 'green', 'yellow', 'white']
+        return unitColors[self.id] if self.id < len(unitColors) else 'black'
+
     def removeUnit(self, unit):
         self.unitCount -= 1
 
