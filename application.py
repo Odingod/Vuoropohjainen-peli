@@ -316,6 +316,7 @@ class UnitActionForm(QDialog):
                 ('Recruit tank', lambda: self.recruitAction('tank')),
                 ('Recruit melee', lambda: self.recruitAction('melee')),
                 ('Recruit ranged', lambda: self.recruitAction('ranged')),
+                ('Recruit builder', lambda: self.recruitAction('builder')),
             )
         
         layout = QFormLayout()
