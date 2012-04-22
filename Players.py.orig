@@ -140,6 +140,29 @@ class AIPlayer(Player):
                 self.currentUnit.recruit("tank")
                 self.cycleUnits()
             
+<<<<<<< HEAD
+            print 'sleeping'
+            time.sleep(1)
+            neighboring = self.currentUnit.tile.getNeighborsI()
+            for neighbour in neighboring:
+                try:
+                    if self.currentUnit.tile.map.tiles[neighbour[0]][neighbour[1]].units:
+                        for unit in self.currentUnit.tile.map.tiles[neighbour[0]][neighbour[1]].units:
+                            print "AI, yksikkoja", unit
+                            if unit.id == "gold":
+                                print "AI:kulta"
+                                self.currentUnit.build('mine')
+                            else:
+                                self.currentUnit.attack(unit)
+                                
+                    if self.currentUnit.tile.map.tiles[neighbour[0]][neighbour[1]].terrain.canHoldUnit:
+                        self.currentUnit.move(neighbour[0], neighbour[1],
+                                ai=True)
+                        self.currentUnit.tile.setChosen(True)
+                        break
+                except (IndexError, TypeError):
+                    pass
+=======
             elif self.currentUnit.id == "tank":
                 for unit in self.game.map.units:
                     if unit.owner != self:
@@ -162,7 +185,7 @@ class AIPlayer(Player):
                                 print "AI, yksikkoja", unit
                                 if unit.id == "gold":
                                     print "AI:kulta"
-                                    self.currentUnit.build('mine')
+                                    self.currentUnit.buildmine()
                                     break
                                 else:
                                     self.currentUnit.attack(unit)
@@ -178,6 +201,7 @@ class AIPlayer(Player):
 #     break
                 
             
+>>>>>>> ab3d3f393d3334aaff1430d5bdd06b1c16dfe239
             
         self.treasury += 100*self.mine_count
         self.endTurn()
