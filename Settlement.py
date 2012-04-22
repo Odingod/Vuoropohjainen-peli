@@ -41,13 +41,17 @@ class Settlement(Building):
             if self.population > 2500:
                 unit = Tank(owner=self.owner)
                 self.tile.addUnit(unit)
-                treasury -= 100
+                self.map.units.append(unit)
+                self.owner.unitCount += 1
+                self.owner.treasury -= 100
             
             unit = Tank(owner=self.owner)
             print self.tile.getUnit()
             if self.tile.canBuild():
                 self.tile.addUnit(unit)
                 self.map.units.append(unit)
+                self.owner.unitCount += 1
+                self.owner.treasury -= 100
             else:
                 neighbors = self.tile.getBoardNeighbors()
                 print neighbors
@@ -59,7 +63,8 @@ class Settlement(Building):
                     if tile.canBuild():
                         tile.addUnit(unit)
                         self.map.units.append(unit)
-                        treasury -= 100
+                        self.owner.unitCount += 1
+                        self.owner.treasury -= 100
                         self.onwer.unitDone()
                         return True
                 print "No empty tiles"
