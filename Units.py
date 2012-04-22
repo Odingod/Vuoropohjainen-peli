@@ -76,7 +76,7 @@ class Unit(object):
     def isInRange(self, other):
         return self.tile.distance(other.tile.i, other.tile.j) in self.range
 
-    def attack(self, other):
+    def attack(self, other, revenge=True):
         if not self.isInRange(other):
             print 'That unit is out of your range.'
             return False
@@ -89,7 +89,12 @@ class Unit(object):
             print 'Cannot attack own units.'
             return False
 
-        return other.takeDamage(random.choice(range(*self.damage)))
+        if other.takeDamage(random.choice(range(*self.damage))):
+            if revenge:
+                other.attack(self, revenge=False)
+            return True
+
+        return False
 
     def attackTile(self, i, j, fun=None):
         units = self.tile.map.tiles[i][j].units
