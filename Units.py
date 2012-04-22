@@ -89,12 +89,11 @@ class Unit(object):
             print 'Cannot attack own units.'
             return False
 
-        if other.takeDamage(random.choice(range(*self.damage))):
+        if not other.takeDamage(random.choice(range(*self.damage))):
             if revenge:
                 other.attack(self, revenge=False)
-            return True
 
-        return False
+        return True
 
     def attackTile(self, i, j, fun=None):
         units = self.tile.map.tiles[i][j].units
@@ -120,13 +119,14 @@ class Unit(object):
 
         if self.hp == 0:
             self.remove()
-        else:
-            print '{0} took {1} damage!'.format(self.id, amount)
-            # Redraw the hp bar
-            self.tile.removeUnit(self)
-            self.tile.addUnit(self)
+            return True
 
-        return True
+        print '{0} took {1} damage!'.format(self.id, amount)
+        # Redraw the hp bar
+        self.tile.removeUnit(self)
+        self.tile.addUnit(self)
+
+        return False
 
     def remove(self):
         print '{0} died!'.format(self.id)
