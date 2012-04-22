@@ -148,7 +148,7 @@ class AIPlayer(Player):
                             print "AI, yksikkoja", unit
                             if unit.id == "gold":
                                 print "AI:kulta"
-                                self.currentUnit.buildmine()
+                                self.currentUnit.build('mine')
                             else:
                                 self.currentUnit.attack(unit)
                                 

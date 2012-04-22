@@ -313,7 +313,7 @@ class UnitActionForm(QDialog):
                 ('Build farm', lambda: self.buildAction('farm')),
                 ('Build tank', lambda: self.recruitAction('tank')),
                 ('Build wall', lambda: self.buildAction('wall')),
-                ('Build gold mine', self.buildmineAction),
+                ('Build gold mine', lambda: self.buildAction('mine')),
                 ('Build settlement', lambda: self.buildAction('settlement')),
             )
         
@@ -333,12 +333,7 @@ class UnitActionForm(QDialog):
 
     def updateTitle(self):
         mainW.bottomDock.updateTitle()
-    def buildmineAction(self):
-        self.hide()
-        if game.buildmineAction():
-            self.delete()
-        else:
-            self.show()
+
     def buildAction(self, building):
         self.hide()
         if game.buildAction(building):

@@ -3,7 +3,6 @@ from PySide.QtCore import QCoreApplication
 from save import saveable, load
 from Players import Player
 from functools import partial
-#from resources import Mine
 
 class Unit(object):
     def __init__(self, id, image, tile=None, moves=(0, 1), hp=30, damage=10, range=(1,), owner=None):
@@ -41,20 +40,7 @@ class Unit(object):
 
     def getId(self):
         return self.id
-    def buildmine(self):
-        if self.id == "tank": #Tankin sijasta pitaa lukea rakentajayksikon id
-            for tile in self.tile.getBoardNeighbors():
-                print self.tile.getBoardNeighbors(), tile
-                i = tile[0]
-                j = tile[1]
-                for unit in self.tile.map.tiles[i][j].units:
-                    if unit.id == "gold":
-                        from resources import Mine
-                        self.tile.map.tiles[i][j].addUnit(Mine(self.owner))
-                        print "Mine built, total mines:",self.owner.mine_count 
-                        return True
-        print "Cannot build a mine"
-        return False
+
     def move_to(self, i, j):
         tiles = self.tile.map.tiles
         self.tile.removeUnit(self)
@@ -170,9 +156,9 @@ class Builder(Unit):
         range = ()
         Unit.__init__(self, 'builder', QImage('builder.png'), tile=tile,
                 owner=owner, moves=moves, hp=hp, damage=damage, range=range)
-        from Settlement import *
+        from resources import Mine
         self.buildings = {
-            'settlement': Settlement,
+            'mine': Mine,
         }
         self.buildRange = (1,)
         self.building = None
@@ -181,26 +167,50 @@ class Builder(Unit):
         if building in self.buildings:
             self.building = building
             self.tile.map.addAction(self.doBuild)
-            self.tile.setChosenByReach(self.buildRange)
+            self.tile.setChosenByDist(self.buildRange)
         else:
-            print 'Cannot build such unit.'
+            print 'Cannot build such a unit.'
             return False
 
         return True
 
     def doBuild(self, i, j):
+        tile = self.tile.map.tiles[i][j]
+
         if not self.build:
             print 'Nothing to build! Something is wrong.'
             self.tile.setChosenByDist(0)
             return False
 
-        if not self.tile.map.tiles[i][j].chosen:
+        if not tile.chosen:
             print 'Cannot build there!'
             self.tile.setChosenByDist(0)
             return False
+
+        if not tile.terrain.canHoldUnit:
+            print 'Cannot build there!'
+            self.tile.setChosenByDist(0)
+            return False
+
+        if self.building == 'mine':
+            if len(tile.units) > 1:
+                print 'Cannot build there!'
+                self.tile.setChosenByDist(0)
+                return False
+
+            golds = filter(lambda x: x.id == 'gold', tile.units)
+
+            if len(golds) == 0:
+                print 'Mine has to be built on top of gold!'
+                self.tile.setChosenByDist(0)
+                return False
+        else:
+            if len(tile.units) > 0:
+                print 'Cannot build there!'
+                self.tile.setChosenByDist(0)
+                return False
         
         self.tile.setChosenByDist(-1)
-        tile = self.tile.map.tiles[i][j]
         u = self.buildings[self.building](tile=tile, owner=self.owner)
         self.building = None
         self.tile.map.units.append(u)
