@@ -43,6 +43,7 @@ class Settlement(Building):
         tile.addUnit(unit)
         self.owner.unitCount += 1
         self.owner.treasury -= price
+        print 'Your treasury has now {0} gold.'.format(self.owner.treasury)
         return True
 
     def recruit(self, unit):
@@ -51,11 +52,13 @@ class Settlement(Building):
             'tank': Tank,
             'melee': Melee,
             'ranged': Ranged,
+            'builder': Builder,
         }
         prices = {
             'tank': 200,
             'ranged': 125,
             'melee': 75,
+            'builder': 25,
         }
 
         for x, y in neighbors:
