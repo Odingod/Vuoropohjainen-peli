@@ -110,11 +110,11 @@ class Game:
             for x in xrange(self.numPlayers):
                 self.players.append(HumanPlayer(self))
         if self.mapSize == 0:
-            self.map.createSquareMap(self.numUnits, self.players, 10, 10, 50)
+            self.map.createSquareMap(self.numUnits, self.players, 50, 1)
         elif self.mapSize == 1:
-            self.map.createSquareMap(self.numUnits, self.players, 20, 20, 35)
+            self.map.createSquareMap(self.numUnits, self.players, 35, 2)
         else:
-            self.map.createSquareMap(self.numUnits, self.players, 30, 30, 20)
+            self.map.createSquareMap(self.numUnits, self.players, 20, 3)
         self.numUnits *= self.numPlayers
         
     def cyclePlayers(self):

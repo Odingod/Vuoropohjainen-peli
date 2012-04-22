@@ -37,13 +37,52 @@ class Map(object):
                     m.units.append(u)
 
         return m
-    
-    def createSquareMap(self, numUnits, players, w=10, h=10, r=20):
+
+    def makeRandomTileMap(self, depth):
+	    if depth == 0:
+		    return [[[1,1,1,1,0][random.randrange(0,5)] for y in range(4)] for x in range(4)]
+	    oldmap = self.makeRandomTileMap(depth-1)
+	    newmap = []
+	    for y in range(len(oldmap)):
+		    newmap.append( [0] * 2 * len(oldmap) )
+		    newmap.append( [0] * 2 * len(oldmap) )
+	    for y in range(len(newmap)):
+		    for x in range(len(newmap[0])):
+			    newmap[x][y] = oldmap[x/2][y/2]
+	    #print "mprinting gnemapaw"
+	    #for i in newmap:
+	    #	print i
+	    for y in range(len(newmap)):
+		    for x in range( len(newmap[0])):
+			    summ = 5
+			    tiles = newmap[x][y]
+			    if x > 0:
+				    tiles += newmap[x-1][y]
+
+			    if y > 0:
+				    tiles += newmap[x][y-1]
+			    if x < len(newmap[0])-1:
+				    tiles += newmap[x+1][y]
+			    if y < len(newmap)-1:
+				    tiles += newmap[x][y+1]
+			    if random.random()*summ > tiles*0.95:
+				    newmap[x][y] = 0
+			    else:
+				    newmap[x][y] = 1
+	    return newmap
+
+    def createSquareMap(self, numUnits, players, r=20, size=1):
+        h = 2**(size+2)
+        w = 2**(size+2)
         self.metrics = Hexagon(-1, -1, r)
+        mymap = self.makeRandomTileMap(size)
+        print "map randomized"
+        if h != len(mymap):
+            print "apua, virhe, mappi on vaaran kokoinen :( :S!"
         for i in xrange(w):
             self.tiles.append([])
             for j in xrange(h):
-                self.tiles[i].append(Tile(i, j, r, self, Ground() if randint(1, 10) < 8 else Water()))
+                self.tiles[i].append(Tile(i, j, r, self, Ground() if mymap[i][j] == 1 else Water()))
                 self.tiles[i]
         for player in players:
             while True:
