@@ -131,35 +131,53 @@ class AIPlayer(Player):
     def doTurn(self):
         self.unitIndex = -1
         self.cycleUnits()
+        import time
         while self.currentUnit:
+            
+            self.currentUnit.tile.ensureVisible()
+            
             if self.currentUnit.id == "settlement":
                 self.currentUnit.recruit("tank")
                 self.cycleUnits()
-            self.currentUnit.tile.ensureVisible()
-            import time
             
-            print 'sleeping'
-            time.sleep(1)
-            neighboring = self.currentUnit.tile.getNeighborsI()
-            for neighbour in neighboring:
-                try:
-                    if self.currentUnit.tile.map.tiles[neighbour[0]][neighbour[1]].units:
-                        for unit in self.currentUnit.tile.map.tiles[neighbour[0]][neighbour[1]].units:
-                            print "AI, yksikkoja", unit
-                            if unit.id == "gold":
-                                print "AI:kulta"
-                                self.currentUnit.buildmine()
-                            else:
-                                self.currentUnit.attack(unit)
-                                
-                    if self.currentUnit.tile.map.tiles[neighbour[0]][neighbour[1]].terrain.canHoldUnit:
-                        self.currentUnit.move(neighbour[0], neighbour[1],
-                                ai=True)
-                        self.currentUnit.tile.setChosen(True)
-                        break
-                except (IndexError, TypeError):
-                    pass
+            elif self.currentUnit.id == "tank":
+                for unit in self.game.map.units:
+                    if unit.owner != self:
+                        if self.currentUnit.attack(unit):
+                            pass
+                        elif unit.id == "settlement":
+                            location_i, location_j = unit.tile.i, unit.tile.j
+                            route = self.currentUnit.tile.getRoute(location_i, location_j)
+                            for i in range(max(self.currentUnit.moves)-1):
+                                route.pop()
+                            tile = route.pop()
+                            self.currentUnit.move(tile.i, tile.j, ai=True)
+                    
+            elif self.currentUnit.id == "builder":          
+                neighboring = self.currentUnit.tile.getNeighborsI()
+                for neighbour in neighboring:
+                    try:
+                        if self.currentUnit.tile.map.tiles[neighbour[0]][neighbour[1]].units:
+                            for unit in self.currentUnit.tile.map.tiles[neighbour[0]][neighbour[1]].units:
+                                print "AI, yksikkoja", unit
+                                if unit.id == "gold":
+                                    print "AI:kulta"
+                                    self.currentUnit.buildmine()
+                                    break
+                                else:
+                                    self.currentUnit.attack(unit)
+                                    break
+                    except (IndexError, TypeError):
+                        pass           
+            time.sleep(1)                   
+            self.cycleUnits()                 
+# if self.currentUnit.tile.map.tiles[neighbour[0]][neighbour[1]].terrain.canHoldUnit:
+#     self.currentUnit.move(neighbour[0], neighbour[1],
+#             ai=True)
+#     self.currentUnit.tile.setChosen(True)
+#     break
+                
             
-            self.cycleUnits()
+            
         self.treasury += 100*self.mine_count
         self.endTurn()
