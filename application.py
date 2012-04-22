@@ -158,7 +158,8 @@ class Game:
 
     def attackAction(self, fun=None):
         if isinstance(self.currentPlayer, HumanPlayer):
-            if not self.currentPlayer.currentUnit.range:
+            if not self.currentPlayer.currentUnit.range or \
+                    self.currentPlayer.currentUnit.range in ((0,), [0]):
                 print 'This unit cannot attack!'
                 return False
 

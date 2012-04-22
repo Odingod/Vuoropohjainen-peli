@@ -65,7 +65,7 @@ class Settlement(Building):
                         self.map.units.append(unit)
                         self.owner.unitCount += 1
                         self.owner.treasury -= 100
-                        self.onwer.unitDone()
+                        self.owner.unitDone()
                         return True
                 print "No empty tiles"
                 return False

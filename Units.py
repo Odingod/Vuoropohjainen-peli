@@ -3,9 +3,10 @@ from PySide.QtCore import QCoreApplication
 from save import saveable, load
 from Players import Player
 from functools import partial
+import random
 
 class Unit(object):
-    def __init__(self, id, image, tile=None, moves=(0, 1), hp=30, damage=10, range=(1,), owner=None):
+    def __init__(self, id, image, tile=None, moves=(0, 1), hp=30, damage=(5,11), range=(1,), owner=None):
         self.id = id
         self.image = image
         self.tile = tile
@@ -88,7 +89,7 @@ class Unit(object):
             print 'Cannot attack own units.'
             return False
 
-        return other.takeDamage(self.damage)
+        return other.takeDamage(random.choice(range(*self.damage)))
 
     def attackTile(self, i, j, fun=None):
         units = self.tile.map.tiles[i][j].units
@@ -138,21 +139,24 @@ class Building(Unit):
 		
 class Tank(Unit):
     def __init__(self, tile=None, owner=None):
-        Unit.__init__(self, 'tank', QImage('alien1.png'), tile, (1, 2, 3), 25, 20, (1,2), owner)
+        Unit.__init__(self, 'tank', QImage('alien1.png'), tile, (1, 2, 3), 25,
+                (15,21), (1,2), owner)
     
 class Melee(Unit):
     def __init__(self, tile=None, owner=None):
-        Unit.__init__(self, 'melee', QImage('melee.png'), tile, (1, 2, 3, 4), 20, 10, (1,), owner)
+        Unit.__init__(self, 'melee', QImage('melee.png'), tile, (1, 2, 3, 4),
+                20, (5,11), (1,), owner)
 
 class Ranged(Unit):
     def __init__(self, tile=None, owner=None):
-        Unit.__init__(self, 'ranged', QImage('ranged.png'), tile, (1, 2), 15, 15, (1, 2), owner)
+        Unit.__init__(self, 'ranged', QImage('ranged.png'), tile, (1, 2), 15,
+                (10,16), (1, 2), owner)
 
 class Builder(Unit):
     def __init__(self, tile=None, owner=None):
         moves = (1, 2, 3)
         hp = 10
-        damage = 0
+        damage = (0,)
         range = ()
         Unit.__init__(self, 'builder', QImage('builder.png'), tile=tile,
                 owner=owner, moves=moves, hp=hp, damage=damage, range=range)
