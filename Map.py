@@ -116,7 +116,7 @@ class Map(object):
         while gold_count < 5:
             row = choice(self.tiles)
             tile = choice(row)
-            if tile.terrain.canHoldUnit:
+            if tile.terrain.canHoldUnit and not tile.units:
                 tile.addUnit(Gold())
                 gold_count += 1
                 
