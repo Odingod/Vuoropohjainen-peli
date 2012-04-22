@@ -312,6 +312,8 @@ class Tile(Hexagon, QGraphicsPolygonItem):
             painter.fillRect(5 + greenWidth, 5, hpWidth-greenWidth, 5, Qt.red)
             painter.end()
         image = QGraphicsPixmapItem(QPixmap(img), self)
+        if mapSize == 0:
+            mapSize = 1
         image.setOffset(self.x + 12/(2*mapSize), self.y + 10/(2*mapSize))
         self.unitImages.append(image)
     
