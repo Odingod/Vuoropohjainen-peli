@@ -232,6 +232,31 @@ class Tile(Hexagon, QGraphicsPolygonItem):
             return filter(lambda x: not x.units, reachables)
 
         return False
+    
+    def getRoute(self, i, j):
+        class Node:
+            def __init__(self, data, previous):
+                self.data = data
+                self.previous = previous
+        lista = [(0,0,self, Node(self, None))]
+        used = set([])
+        
+        while lista:
+            curdist, length, current, voivoi = heapq.heappop(lista)
+            used.add(current)
+            if (not current.terrain.canHoldUnit) and (current.i != i or current.j != j):
+                continue
+            if current.i == i and current.j == j:
+                aaa = []
+                while voivoi != None:
+                    aaa.append(voivoi.data)
+                    voivoi = voivoi.previous
+                return aaa
+            for x in current.getBoardNeighbors():
+                tile = self.map.tiles[x[0]][x[1]]
+                if not tile in used:
+                    heapq.heappush(lista, (tile.distance(i, j), length+1, tile, Node(tile, voivoi)))
+        
                 
     def setChosen(self, ch):
         self.chosen = ch
@@ -265,7 +290,8 @@ class Tile(Hexagon, QGraphicsPolygonItem):
 
         # Deselect all
         self.setChosenByDist(-1)
-
+        #for asdf in self.getRoute(1,1): #Testattiin reitinhakua, ei testata enaa
+        #    print asdf.i, asdf.j
         for reachable in self.canReach(self.i, self.j, reach, True):
             reachable.setChosen(True)
     
