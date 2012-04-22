@@ -29,7 +29,6 @@ from PySide.QtGui import *
 from Map import Map
 from Players import Player, HumanPlayer, AIPlayer
 from Units import Unit
-from resources import *
 import Hexagon
 from functools import partial
 import sys
@@ -179,19 +178,7 @@ class Game:
             return self.currentPlayer.currentUnit.recruit(unit)
         return False
     def buildmineAction(self):
-        unit = self.currentPlayer.currentUnit
-        if unit.id == "tank": #Tankin sijasta pitaa lukea rakentajayksikon id
-            for tile in unit.tile.getBoardNeighbors():
-                print unit.tile.getBoardNeighbors(), tile
-                i = tile[0]
-                j = tile[1]
-                for unit in self.map.tiles[i][j].units:
-                    if unit.id == "gold":
-                        self.map.tiles[i][j].addUnit(Mine(self.currentPlayer))
-                        print "Mine built, total mines:",self.currentPlayer.mine_count 
-                        return True
-        print "Cannot build a mine"
-        return False
+        return self.currentPlayer.currentUnit.buildmine()
 
     def nextUnitAction(self):
         if isinstance(self.currentPlayer, HumanPlayer):
