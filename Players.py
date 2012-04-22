@@ -132,6 +132,9 @@ class AIPlayer(Player):
         self.unitIndex = -1
         self.cycleUnits()
         while self.currentUnit:
+            if self.currentUnit.id == "settlement":
+                self.currentUnit.recruit("tank")
+                self.cycleUnits()
             self.currentUnit.tile.ensureVisible()
             import time
             
@@ -140,6 +143,15 @@ class AIPlayer(Player):
             neighboring = self.currentUnit.tile.getNeighborsI()
             for neighbour in neighboring:
                 try:
+                    if self.currentUnit.tile.map.tiles[neighbour[0]][neighbour[1]].units:
+                        for unit in self.currentUnit.tile.map.tiles[neighbour[0]][neighbour[1]].units:
+                            print "AI, yksikkoja", unit
+                            if unit.id == "gold":
+                                print "AI:kulta"
+                                self.currentUnit.buildmine()
+                            else:
+                                self.currentUnit.attack(unit)
+                                
                     if self.currentUnit.tile.map.tiles[neighbour[0]][neighbour[1]].terrain.canHoldUnit:
                         self.currentUnit.move(neighbour[0], neighbour[1],
                                 ai=True)

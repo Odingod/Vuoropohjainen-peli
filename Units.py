@@ -3,6 +3,7 @@ from PySide.QtCore import QCoreApplication
 from save import saveable, load
 from Players import Player
 from functools import partial
+#from resources import Mine
 
 class Unit(object):
     def __init__(self, id, image, tile=None, moves=(0, 1), hp=30, damage=10, range=(1,), owner=None):
@@ -40,7 +41,20 @@ class Unit(object):
 
     def getId(self):
         return self.id
-
+    def buildmine(self):
+        if self.id == "tank": #Tankin sijasta pitaa lukea rakentajayksikon id
+            for tile in self.tile.getBoardNeighbors():
+                print self.tile.getBoardNeighbors(), tile
+                i = tile[0]
+                j = tile[1]
+                for unit in self.tile.map.tiles[i][j].units:
+                    if unit.id == "gold":
+                        from resources import Mine
+                        self.tile.map.tiles[i][j].addUnit(Mine(self.owner))
+                        print "Mine built, total mines:",self.owner.mine_count 
+                        return True
+        print "Cannot build a mine"
+        return False
     def move_to(self, i, j):
         tiles = self.tile.map.tiles
         self.tile.removeUnit(self)
