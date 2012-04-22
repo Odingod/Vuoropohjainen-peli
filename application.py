@@ -178,8 +178,6 @@ class Game:
         if isinstance(self.currentPlayer, HumanPlayer):
             return self.currentPlayer.currentUnit.recruit(unit)
         return False
-    def buildmineAction(self):
-        return self.currentPlayer.currentUnit.buildmine()
 
     def nextUnitAction(self):
         if isinstance(self.currentPlayer, HumanPlayer):
@@ -312,10 +310,12 @@ class UnitActionForm(QDialog):
                 ('Move', self.moveAction),
                 ('Attack', self.attackAction),
                 ('Build farm', lambda: self.buildAction('farm')),
-                ('Build tank', lambda: self.recruitAction('tank')),
                 ('Build wall', lambda: self.buildAction('wall')),
                 ('Build gold mine', lambda: self.buildAction('mine')),
                 ('Build settlement', lambda: self.buildAction('settlement')),
+                ('Recruit tank', lambda: self.recruitAction('tank')),
+                ('Recruit melee', lambda: self.recruitAction('melee')),
+                ('Recruit ranged', lambda: self.recruitAction('ranged')),
             )
         
         layout = QFormLayout()

@@ -33,45 +33,38 @@ class Settlement(Building):
         self.owner.unitDone()
         return True
 
-    def recruit(self, unit):
-        treasury = self.owner.treasury
-        if treasury < 100:
-            print "Not enough gold. You have", treasury, "and 100 is needed"
-        if unit == "tank" and treasury >= 100:
-            if self.population > 2500:
-                unit = Tank(owner=self.owner)
-                self.tile.addUnit(unit)
-                self.map.units.append(unit)
-                self.owner.unitCount += 1
-                self.owner.treasury -= 100
-            
-            unit = Tank(owner=self.owner)
-            print self.tile.getUnit()
-            if self.tile.canBuild():
-                self.tile.addUnit(unit)
-                self.map.units.append(unit)
-                self.owner.unitCount += 1
-                self.owner.treasury -= 100
-            else:
-                neighbors = self.tile.getBoardNeighbors()
-                print neighbors
-                for i in range(len(neighbors)):
-                    x = neighbors[i][0]
-                    y = neighbors[i][1]
-                    tile = self.map.tiles[x][y]
-                    print tile
-                    if tile.canBuild():
-                        tile.addUnit(unit)
-                        self.map.units.append(unit)
-                        self.owner.unitCount += 1
-                        self.owner.treasury -= 100
-                        self.owner.unitDone()
-                        return True
-                print "No empty tiles"
-                return False
-                    
-            
-            self.owner.unitDone()
-            return True
+    def do_recruit(self, type, owner, tile, price):
+        if self.owner.treasury < price:
+            print 'Not enough gold. You have {0} and need {1}'.format(
+                    self.owner.treasury, price)
+            return False
 
+        unit = type(owner=owner, tile=tile)
+        tile.addUnit(unit)
+        self.owner.unitCount += 1
+        self.owner.treasury -= price
+        return True
+
+    def recruit(self, unit):
+        neighbors = self.tile.getBoardNeighbors()
+        types = {
+            'tank': Tank,
+            'melee': Melee,
+            'ranged': Ranged,
+        }
+        prices = {
+            'tank': 200,
+            'ranged': 125,
+            'melee': 75,
+        }
+
+        for x, y in neighbors:
+            tile = self.map.tiles[x][y]
+
+            if tile.canBuild() and tile.terrain.canHoldUnit and \
+                  self.do_recruit(types[unit], self.owner, tile, prices[unit]):
+                self.owner.unitDone()
+                return True
+
+        print 'Cannot recruit - no empty tiles.'
         return False

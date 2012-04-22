@@ -154,7 +154,7 @@ class Melee(Unit):
 
 class Ranged(Unit):
     def __init__(self, tile=None, owner=None):
-        Unit.__init__(self, 'ranged', QImage('ranged.png'), tile, (1, 2), 15,
+        Unit.__init__(self, 'ranged', QImage('range.png'), tile, (1, 2), 15,
                 (10,16), (1, 2), owner)
 
 class Builder(Unit):
