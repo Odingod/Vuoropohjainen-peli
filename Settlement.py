@@ -65,7 +65,11 @@ class Settlement(Building):
             tile = self.map.tiles[x][y]
 
             if tile.canBuild() and tile.terrain.canHoldUnit and \
-                  self.do_recruit(types[unit], self.owner, tile, prices[unit]):
+                    len(tile.units) == 0:
+                if not self.do_recruit(types[unit], self.owner, tile,
+                        prices[unit]):
+                    return False
+
                 self.owner.unitDone()
                 return True
 
