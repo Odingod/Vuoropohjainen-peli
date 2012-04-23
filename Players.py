@@ -144,10 +144,12 @@ class AIPlayer(Player):
                 for unit in self.game.map.units:
                     if unit.owner != self:
                         if self.currentUnit.attack(unit):
-                            pass
+                            break
                         elif unit.id == "settlement":
                             location_i, location_j = unit.tile.i, unit.tile.j
                             route = self.currentUnit.tile.getRoute(location_i, location_j)
+                            if not route:
+                                continue
                             for i in range(max(self.currentUnit.moves)-1):
                                 route.pop()
                             tile = route.pop()
