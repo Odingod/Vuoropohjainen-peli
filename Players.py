@@ -162,7 +162,9 @@ class AIPlayer(Player):
                             print "AI, yksikkoja", unit
                             if unit.id == "gold":
                                 print "AI:kulta", self.game.map.unused_gold
-                                self.currentUnit.build("mine")
+                                unit.tile.setChosen(True)
+                                self.currentUnit.building = "mine"
+                                self.currentUnit.doBuild(unit.tile.i, unit.tile.j)
                                 print self.game.map.unused_gold, unit
                                 self.game.map.unused_gold.remove(unit)
                     '''except (IndexError, TypeError):
@@ -175,8 +177,13 @@ class AIPlayer(Player):
                 for gold_place in self.game.map.unused_gold:
                     dist = curloc.distance(gold_place.tile.i, gold_place.tile.j)
                     if dist < min_dist:
-                        min_dist = dist
-                        nearest = gold_place
+                        free = True
+                        for unit in gold_place.tile.units:
+                            if unit.id == "mine":
+                                free = False
+                        if free:
+                            min_dist = dist
+                            nearest = gold_place
                 location_i, location_j = nearest.tile.i, nearest.tile.j
                 route = self.currentUnit.tile.getRoute(location_i, location_j)
                 if not route:
