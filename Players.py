@@ -133,44 +133,66 @@ class AIPlayer(Player):
         self.cycleUnits()
         import time
         while self.currentUnit:
-            
+            print "CURRENTUNIT", self.currentUnit
             self.currentUnit.tile.ensureVisible()
             
             if self.currentUnit.id == "settlement":
                 self.currentUnit.recruit("tank")
-                self.cycleUnits()
             
             elif self.currentUnit.id == "tank":
                 for unit in self.game.map.units:
                     if unit.owner != self:
                         if self.currentUnit.attack(unit):
-                            break
+                            pass
                         elif unit.id == "settlement":
                             location_i, location_j = unit.tile.i, unit.tile.j
                             route = self.currentUnit.tile.getRoute(location_i, location_j)
-                            if not route:
-                                continue
                             for i in range(max(self.currentUnit.moves)-1):
                                 route.pop()
                             tile = route.pop()
                             self.currentUnit.move(tile.i, tile.j, ai=True)
                     
-            elif self.currentUnit.id == "builder":          
-                neighboring = self.currentUnit.tile.getNeighborsI()
+            elif self.currentUnit.id == "builder":      
+                print "BUILDER"    
+                neighboring = self.currentUnit.tile.getBoardNeighbors()
                 for neighbour in neighboring:
-                    try:
-                        if self.currentUnit.tile.map.tiles[neighbour[0]][neighbour[1]].units:
-                            for unit in self.currentUnit.tile.map.tiles[neighbour[0]][neighbour[1]].units:
-                                print "AI, yksikkoja", unit
-                                if unit.id == "gold":
-                                    print "AI:kulta"
-                                    self.currentUnit.build('mine')
-                                    break
-                                else:
-                                    self.currentUnit.attack(unit)
-                                    break
-                    except (IndexError, TypeError):
-                        pass           
+                    if self.currentUnit.tile.map.tiles[neighbour[0]][neighbour[1]].units:
+                        print "if unit"
+                        for unit in self.currentUnit.tile.map.tiles[neighbour[0]][neighbour[1]].units:
+                            print "AI, yksikkoja", unit
+                            if unit.id == "gold":
+                                print "AI:kulta", self.game.map.unused_gold
+                                self.currentUnit.build("mine")
+                                print self.game.map.unused_gold, unit
+                                self.game.map.unused_gold.remove(unit)
+                    '''except (IndexError, TypeError):
+                        print "VIRHE, siirrytaan seuraavaan yksikkoon"
+                        pass '''
+                print self.game.map.units
+                min_dist = 100
+                nearest = None
+                curloc = self.currentUnit.tile
+                for gold_place in self.game.map.unused_gold:
+                    dist = curloc.distance(gold_place.tile.i, gold_place.tile.j)
+                    if dist < min_dist:
+                        min_dist = dist
+                        nearest = gold_place
+                location_i, location_j = nearest.tile.i, nearest.tile.j
+                route = self.currentUnit.tile.getRoute(location_i, location_j)
+                if not route:
+                    pass
+                elif len(route)-1 <= max(self.currentUnit.moves):
+                    print "IN-range"
+                    dest_i, dest_j = route[1].i, route[1].j
+                    self.currentUnit.move(dest_i, dest_j, ai=True)
+                else:
+                    print "OUT-range"
+                    for i in range(max(self.currentUnit.moves)-1):
+                        route.pop()
+                    tile = route.pop()
+                    self.currentUnit.move(tile.i, tile.j, ai=True)
+                    
+                              
             time.sleep(1)                   
             self.cycleUnits()                 
 # if self.currentUnit.tile.map.tiles[neighbour[0]][neighbour[1]].terrain.canHoldUnit:
@@ -183,3 +205,4 @@ class AIPlayer(Player):
             
         self.treasury += 100*self.mine_count
         self.endTurn()
+

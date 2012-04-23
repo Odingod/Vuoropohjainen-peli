@@ -177,6 +177,7 @@ class Builder(Unit):
             self.building = building
             self.tile.map.addAction(self.doBuild)
             self.tile.setChosenByDist(self.buildRange)
+                
         else:
             print 'Cannot build such a unit.'
             return False
