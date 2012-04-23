@@ -5,13 +5,17 @@ Created on Jul 25, 2011
 @author: anttir
 '''
 from math import sqrt
-from PySide.QtGui import QMenu, QGraphicsPolygonItem, QPolygon, QBrush, QPen, QPixmap, QGraphicsPixmapItem
+from PySide.QtGui import QMenu, QGraphicsPolygonItem, QPolygon, QBrush, QPen, QPixmap, QGraphicsPixmapItem, QImage, QPainter, QPen
 from PySide.QtCore import QRect, QPoint, Qt
 from functools import partial
 from Terrains import *
 from Units import Unit
+from Players import Player
 from save import saveable, load
 import heapq
+
+showUnitDialog = None
+mapSize = 1
 
 class Hexagon(object):
     neighbor_di = (0, 1, 1, 0, -1, -1)
@@ -138,7 +142,10 @@ class Tile(Hexagon, QGraphicsPolygonItem):
     
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
-            self.map.tellClick(self.i, self.j)
+            if self.map.waitingInput:
+                self.map.tellClick(self.i, self.j)
+            elif self.units:
+                showUnitDialog(self.units, event)
             self.scene().update()
         if event.button() == Qt.RightButton:
             self.getContextMenu().exec_(event.screenPos())
@@ -206,7 +213,8 @@ class Tile(Hexagon, QGraphicsPolygonItem):
             used.add(current)
 
             if (length > dist) or (not current.terrain.canHoldUnit) or \
-                    (curdist > dist - length and not getReachables):
+                    (curdist > dist - length and not getReachables) or \
+                    ((current.i != i or current.j != j) and current.units):
                 continue
 
             reachables.add(current)
@@ -224,6 +232,31 @@ class Tile(Hexagon, QGraphicsPolygonItem):
             return filter(lambda x: not x.units, reachables)
 
         return False
+    
+    def getRoute(self, i, j):
+        class Node:
+            def __init__(self, data, previous):
+                self.data = data
+                self.previous = previous
+        lista = [(0,0,self, Node(self, None))]
+        used = set([])
+        
+        while lista:
+            curdist, length, current, voivoi = heapq.heappop(lista)
+            used.add(current)
+            if (not current.terrain.canHoldUnit) and (current.i != i or current.j != j):
+                continue
+            if current.i == i and current.j == j:
+                aaa = []
+                while voivoi != None:
+                    aaa.append(voivoi.data)
+                    voivoi = voivoi.previous
+                return aaa
+            for x in current.getBoardNeighbors():
+                tile = self.map.tiles[x[0]][x[1]]
+                if not tile in used:
+                    heapq.heappush(lista, (tile.distance(i, j), length+1, tile, Node(tile, voivoi)))
+        
                 
     def setChosen(self, ch):
         self.chosen = ch
@@ -257,15 +290,31 @@ class Tile(Hexagon, QGraphicsPolygonItem):
 
         # Deselect all
         self.setChosenByDist(-1)
-
+        #for asdf in self.getRoute(1,1): #Testattiin reitinhakua, ei testata enaa
+        #    print asdf.i, asdf.j
         for reachable in self.canReach(self.i, self.j, reach, True):
             reachable.setChosen(True)
     
     def addUnit(self, unit):
+        global mapSize
         unit.tile = self
         self.units.append(unit)
-        image = QGraphicsPixmapItem(QPixmap(unit.image), self)
-        image.setOffset(self.x + 12, self.y + 10)
+        img = QImage(unit.image).scaledToWidth(self.getImageRect().width())
+        if unit.owner:
+            rect = img.rect()
+            painter = QPainter(img)
+            painter.setPen(unit.owner.unitColor())
+            painter.drawEllipse(rect)
+
+            hpWidth = 20
+            greenWidth = unit.hp / float(unit.maxHp) * hpWidth
+            painter.fillRect(5, 5, greenWidth, 5, Qt.green)
+            painter.fillRect(5 + greenWidth, 5, hpWidth-greenWidth, 5, Qt.red)
+            painter.end()
+        image = QGraphicsPixmapItem(QPixmap(img), self)
+        if mapSize == 0:
+            mapSize = 1
+        image.setOffset(self.x + 12/(2*mapSize), self.y + 10/(2*mapSize))
         self.unitImages.append(image)
     
     def getUnit(self):

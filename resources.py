@@ -9,5 +9,10 @@ class Resources(Unit):
         Unit.__init__(self, id, image)
 class Gold(Resources):
     def __init__(self):
-        Resources.__init__(self, "gold", "gold_20x20.png")
+        Resources.__init__(self, "gold", "raw_gold.png")
+class Mine(Building):
+    def __init__(self, owner, tile):
+        Building.__init__(self, id="mine", image="gold_mine.png", owner=owner,
+                tile=tile)
+        owner.mine_count += 1
         

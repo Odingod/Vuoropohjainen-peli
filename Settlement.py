@@ -9,9 +9,15 @@ import Map
 from PySide.QtGui import QImage
 
 class Settlement(Building):
+<<<<<<< HEAD
     def __init__(self, name, image="castle_30x30.png", tile=None,
             population=1000, owner=None, map=None):
         Building.__init__(self, 'settlement', QImage(image), tile, [], 100, owner=owner)
+=======
+    def __init__(self, name='Random Settlement', image="castle_30x30.png", tile=None,
+            population=1000, owner=None, map=None):
+        Building.__init__(self, 'settlement', QImage(image), tile, moves=[], hp=100, owner=owner)
+>>>>>>> 571d40934fffa7cb2347cafc1ce3b4347edb0033
         self.population = population
         self.main_building = 1
         self.barracks = 0
@@ -30,35 +36,48 @@ class Settlement(Building):
             print "no such building, available buildings: barracks, farm, wall"
             return False
 
+        self.owner.unitDone()
+        return True
+
+    def do_recruit(self, type, owner, tile, price):
+        if self.owner.treasury < price:
+            print 'Not enough gold. You have {0} and need {1}'.format(
+                    self.owner.treasury, price)
+            return False
+
+        unit = type(owner=owner, tile=tile)
+        tile.addUnit(unit)
+        self.owner.unitCount += 1
+        self.owner.treasury -= price
+        print 'Your treasury has now {0} gold.'.format(self.owner.treasury)
         return True
 
     def recruit(self, unit):
-        if unit == "tank":
-            if self.population > 2500:
-                unit = Tank(owner=self.owner)
-                self.tile.addUnit(unit)
-            
-            unit = Tank(owner=self.owner)
-            print self.tile.getUnit()
-            if self.tile.canBuild():
-                self.tile.addUnit(unit)
-                self.map.units.append(unit)
-            else:
-                neighbors = self.tile.getBoardNeighbors()
-                print neighbors
-                for i in range(len(neighbors)):
-                    x = neighbors[i][0]
-                    y = neighbors[i][1]
-                    tile = self.map.tiles[x][y]
-                    print tile
-                    if tile.canBuild():
-                        tile.addUnit(unit)
-                        self.map.units.append(unit)
-                        return True
-                print "No empty tiles"
-                return False
-                    
+        neighbors = self.tile.getBoardNeighbors()
+        types = {
+            'tank': Tank,
+            'melee': Melee,
+            'ranged': Ranged,
+            'builder': Builder,
+        }
+        prices = {
+            'tank': 200,
+            'ranged': 125,
+            'melee': 75,
+            'builder': 25,
+        }
 
-            return True
+        for x, y in neighbors:
+            tile = self.map.tiles[x][y]
 
+            if tile.canBuild() and tile.terrain.canHoldUnit and \
+                    len(tile.units) == 0:
+                if not self.do_recruit(types[unit], self.owner, tile,
+                        prices[unit]):
+                    return False
+
+                self.owner.unitDone()
+                return True
+
+        print 'Cannot recruit - no empty tiles.'
         return False

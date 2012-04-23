@@ -23,14 +23,25 @@ suurempia
 -valikkojärjestelmän rankempi virittely
 
 '''
+
 from PySide.QtCore import *
 from PySide.QtGui import *
 from Map import Map
 from Players import Player, HumanPlayer, AIPlayer
+from Units import Unit
+import Hexagon
 from functools import partial
 import sys
 from save import saveable, load
 import json
+
+def _showUnitDialog(units, event):
+    if game.singletonObject: return #only one pop up at a time
+    for unit in units:
+        if unit.owner == game.currentPlayer and unit not in unit.owner.doneUnits:
+            game.currentPlayer.currentUnit = unit
+            game.singletonObject = UnitActionForm(mainW)
+            game.singletonObject.exec_()
 
 class Game:
     def __init__(self):
@@ -40,6 +51,11 @@ class Game:
         self.playerIndex = -1 
         self.turn = 1
         self.players = []
+        self.mode = 'single'
+        self.playerNames = []
+        self.singletonObject = None
+        self.turnUnits = []
+        self.mapSize = 0 #small
 
     def __saveable__(self):
         """ Returns a saveable representation of the game. """
@@ -86,10 +102,19 @@ class Game:
         return load(cls, d)
 
     def start(self):
-        self.players.append(HumanPlayer(self))
-        for x in xrange(self.numPlayers - 1):
-            self.players.append(AIPlayer(self))
-        self.map.createSquareMap(self.numUnits, self.players, 10, 10, 50)
+        if game.mode == 'single':
+            self.players.append(HumanPlayer(self))
+            for x in xrange(self.numPlayers - 1):
+                self.players.append(AIPlayer(self))
+        else:
+            for x in xrange(self.numPlayers):
+                self.players.append(HumanPlayer(self))
+        if self.mapSize == 0:
+            self.map.createSquareMap(self.numUnits, self.players, 50, 1)
+        elif self.mapSize == 1:
+            self.map.createSquareMap(self.numUnits, self.players, 35, 2)
+        else:
+            self.map.createSquareMap(self.numUnits, self.players, 20, 3)
         self.numUnits *= self.numPlayers
         
     def cyclePlayers(self):
@@ -99,7 +124,9 @@ class Game:
             self.currentPlayer = None # None indicates the turn is over
         else:
             self.currentPlayer = self.players[self.playerIndex]
-    
+            if isinstance(self.currentPlayer, HumanPlayer):
+                self.turnUnits = filter(lambda x: x.owner == self.currentPlayer, self.map.units)
+
     def nextPlayerAction(self):
         self.cyclePlayers()
         if self.currentPlayer:
@@ -129,8 +156,13 @@ class Game:
             return True
         return False
 
-    def attackAction(self, fun):
+    def attackAction(self, fun=None):
         if isinstance(self.currentPlayer, HumanPlayer):
+            if not self.currentPlayer.currentUnit.range or \
+                    self.currentPlayer.currentUnit.range in ((0,), [0]):
+                print 'This unit cannot attack!'
+                return False
+
             unit = self.currentPlayer.currentUnit
             unit.tile.setChosenByDist(unit.range)
             self.map.addAction(partial(unit.attackTile, fun=fun))
@@ -192,6 +224,32 @@ class MainView(QGraphicsView):
             elif (self.dragPos - event.globalPos()).manhattanLength() > QApplication.startDragDistance():
                 self.dragging = True
 
+class PlayerNames(QDialog):
+    def __init__(self, parent):
+        super(PlayerNames, self).__init__(parent)
+        layout = QFormLayout()
+        self.texts = []
+        
+        for i in range(game.numPlayers):
+            layout.addRow(QLabel('%s %i' % ('Player ', i)))
+            self.texts.append(QLineEdit())
+            layout.addRow(self.texts[i])
+
+        buttons = QDialogButtonBox(QDialogButtonBox.Ok | \
+                                   QDialogButtonBox.Cancel)
+        buttons.accepted.connect(self.accept)
+        buttons.rejected.connect(self.reject)
+        
+        layout.addRow(buttons)
+        self.setLayout(layout)
+    
+    def accept(self):
+        for i in range(game.numPlayers):
+            text = self.texts[i].text()
+            game.playerNames.append(text)
+        super(PlayerNames, self).accept()
+
+
 class NewGameDialog(QDialog):
     def __init__(self, parent):
         super(NewGameDialog, self).__init__(parent)
@@ -203,21 +261,116 @@ class NewGameDialog(QDialog):
         self.numPlayers.setRange(1, 4)
         self.numPlayers.setValue(1)
         
+        mapSize = QGroupBox('Select Map Size')
+        lbl = QLabel('Select Map Size')
+        box = QVBoxLayout()
+        b1 = QRadioButton('Small')
+        b2 = QRadioButton('Medium')
+        b3 = QRadioButton('Huge')
+        self.btns = [b1,b2,b3]
+        b1.setChecked(True)
+        box.addWidget(b1)
+        box.addWidget(b2)
+        box.addWidget(b3)
+        mapSize.setLayout(box)
         
-        buttons = QDialogButtonBox(QDialogButtonBox.Ok | \
-            QDialogButtonBox.Cancel)
-        buttons.accepted.connect(self.accept)
+        buttons = QDialogButtonBox(QDialogButtonBox.Cancel)
+        btn1 = QPushButton('Single Player', self)
+        btn2 = QPushButton('Multi Player', self)
+        btn1.clicked.connect(self.single)
+        btn2.clicked.connect(self.multi)
+        buttons.addButton(btn1, QDialogButtonBox.ActionRole)
+        buttons.addButton(btn2, QDialogButtonBox.ActionRole)
         buttons.rejected.connect(self.reject)
 
         layout.addRow("Number Of Units", self.numUnits)
         layout.addRow("Number Of Players", self.numPlayers)
+        layout.addRow(mapSize)
         layout.addRow(buttons)
         self.setLayout(layout)
 
-    def accept(self):
+    def single(self):
         game.numUnits = self.numUnits.value()
         game.numPlayers = self.numPlayers.value()
+        for i in range(len(self.btns)):
+            if self.btns[i].isChecked():
+                game.mapSize = i
         super(NewGameDialog, self).accept()
+
+    def multi(self):
+        game.mode = 'multi'
+        self.single()
+
+# user is displayed commands for a unit
+class UnitActionForm(QDialog):
+    def __init__(self, parent=None):
+        super(UnitActionForm, self).__init__(parent)
+        methods = (
+                ('Cancel', self.cancelAction),
+                ('Move', self.moveAction),
+                ('Attack', self.attackAction),
+                ('Build farm', lambda: self.buildAction('farm')),
+                ('Build wall', lambda: self.buildAction('wall')),
+                ('Build gold mine', lambda: self.buildAction('mine')),
+                ('Build settlement', lambda: self.buildAction('settlement')),
+                ('Recruit tank', lambda: self.recruitAction('tank')),
+                ('Recruit melee', lambda: self.recruitAction('melee')),
+                ('Recruit ranged', lambda: self.recruitAction('ranged')),
+                ('Recruit builder', lambda: self.recruitAction('builder')),
+            )
+        
+        layout = QFormLayout()
+        actionButtonGroupBox = QWidget()
+        abLayout = QVBoxLayout()
+        abLayout.setContentsMargins(10,20,10,10)
+        for title, action in methods:
+            btn = QPushButton(title, self)
+            btn.setMinimumSize(40,25)
+            btn.clicked.connect(action)
+            abLayout.addWidget(btn)
+        actionButtonGroupBox.setLayout(abLayout)
+        layout.addRow(actionButtonGroupBox)
+        self.setLayout(layout)
+        self.updateTitle()
+
+    def updateTitle(self):
+        mainW.bottomDock.updateTitle()
+
+    def buildAction(self, building):
+        self.hide()
+        if game.buildAction(building):
+            self.delete()
+        else:
+            self.show()
+    
+    def recruitAction(self, unit):
+        self.hide()
+        if game.recruitAction(unit):
+            self.delete()
+        else:
+            self.show()
+    
+    def moveAction(self):
+        self.hide()
+        if game.moveAction(self.updateTitle):
+            self.delete()
+        else:
+            self.show()
+
+    def attackAction(self):
+        self.hide()
+        if game.attackAction(self.updateTitle):
+            self.delete()
+        else:
+            self.show()
+    
+    def cancelAction(self):
+        self.delete()
+    
+    def delete(self):
+        if game.singletonObject:
+            game.singletonObject = None
+            self.done(0)
 
 class BottomDock(QDockWidget):
     def __init__(self, parent):
@@ -230,86 +383,39 @@ class BottomDock(QDockWidget):
 
         layout = QFormLayout()
         self.distButton = QPushButton("Pass")
-        self.nextUnitButton = QPushButton("Next Unit")
         self.nextTurnButton = QPushButton("Next Turn")
-        self.moveButton = QPushButton("Move")
-        self.attackButton = QPushButton("Attack")
-
-        self.moveButton.clicked.connect(self.moveAction)
-        self.nextUnitButton.clicked.connect(self.nextUnitAction)
         self.nextTurnButton.clicked.connect(self.nextTurnAction)
-        self.attackButton.clicked.connect(self.attackAction)
-
-        actionButtonGroupBox = QWidget()
-        abLayout = QHBoxLayout()
-        mar = abLayout.contentsMargins().bottom()
-        abLayout.setContentsMargins(mar, mar, mar, 0)
-        abLayout.addWidget(self.moveButton)
-        abLayout.addWidget(self.attackButton)
-
-        self.build_farmButton = QPushButton("Build farm")
-        self.build_tankButton = QPushButton("Build tank")
-        self.build_wallButton = QPushButton("Build wall")
-
-        self.build_farmButton.clicked.connect(
-                lambda: self.buildAction('farm'))
-        self.build_wallButton.clicked.connect(
-                lambda: self.buildAction('wall'))
-
-        self.build_tankButton.clicked.connect(
-                lambda: self.recruitAction('tank'))
-
-        abLayout.addWidget(self.build_farmButton)
-        abLayout.addWidget(self.build_tankButton)
-        abLayout.addWidget(self.build_wallButton)
-        actionButtonGroupBox.setLayout(abLayout)
 
         turnControlButtonGroupBox = QWidget()
         tcLayout = QHBoxLayout()
+        mar = tcLayout.contentsMargins().bottom()
         tcLayout.setContentsMargins(mar, 0, mar, mar)
-        tcLayout.addWidget(self.nextUnitButton)
         tcLayout.addWidget(self.nextTurnButton)
         turnControlButtonGroupBox.setLayout(tcLayout)
 
-        layout.addRow(actionButtonGroupBox)
         layout.addRow(turnControlButtonGroupBox)
         bottomDockWidget = QWidget()
         bottomDockWidget.setLayout(layout)
         self.setWidget(bottomDockWidget)
 
     def updateTitle(self):
-        self.title.setText("Unit: %d   Turn: %d" % (game.currentPlayer.printableUnitIndex, game.turn))
-
-    def buildAction(self, building):
-        if game.buildAction(building):
-            self.nextUnitAction()
-
-    def recruitAction(self, unit):
-        if game.recruitAction(unit):
-            self.nextUnitAction()
-
-    def moveAction(self):
-        game.moveAction(self.updateTitle)
-
-    def attackAction(self):
-        game.attackAction(self.nextUnitAction)
-
-    def nextUnitAction(self):
-        if game.nextUnitAction():
-            self.updateTitle()
-            self.enableButtons()
+        if game.mode=='single':
+            self.title.setText("Unit: %d/%d   Turn: %d" %
+                    (len(game.currentPlayer.doneUnits), game.currentPlayer.unitCount, game.turn))
+        else:
+            self.title.setText("Player: %s, Color: %s,   Turn: %d" % (game.currentPlayer.name, game.currentPlayer.printableUnitColor() ,game.turn))
 
     def nextTurnAction(self):
         if game.nextTurnAction():
+            if game.singletonObject:
+                game.singletonObject.delete()
             self.updateTitle()
             self.enableButtons()
 
     def disableButtons(self):
-        self.moveButton.setEnabled(False)
         self.distButton.setEnabled(False)
 
     def enableButtons(self):
-        self.moveButton.setEnabled(True)
         self.distButton.setEnabled(True)
                 
 class MainWindow(QMainWindow):
@@ -350,10 +456,14 @@ class MainWindow(QMainWindow):
             game = Game()
             newGameDialog = NewGameDialog(self)
             r = newGameDialog.exec_()
-
             if r == 0:
                 self.close()
                 sys.exit()
+            if game.mode == 'multi':
+                names = PlayerNames(self) #get player names
+                if not names.exec_():
+                    self.close()
+                    sys.exit()
 
             game.start()
 
@@ -364,15 +474,18 @@ class MainWindow(QMainWindow):
         game.nextPlayerAction()
 
 if __name__ == "__main__":
+    global mainW
     app = QApplication([])
 
     window = MainWindow()
+    mainW = window
     window.setWindowTitle("Super peli!")
     window.show()
-
+    Hexagon.showUnitDialog = _showUnitDialog
+    Hexagon.mapSize = game.mapSize
     # Have to do this manually here, after everything has been initialized,
     # because otherwise, the current unit might not be visible the first time
     # you start the game
-    game.currentPlayer.currentUnit.tile.ensureVisible()
+    #game.currentPlayer.currentUnit.tile.ensureVisible()
 
     app.exec_()
