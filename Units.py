@@ -55,6 +55,11 @@ class Unit(object):
             print "You can't move there"
             self.tile.setChosenByDist(0)
         elif self.tile.map.tiles[i][j].terrain.canHoldUnit:
+            lista = self.tile.getRoute(i, j)
+            for hex in lista:
+                self.move_to(hex.i, hex.j)
+                app.exec_()
+                wait(5)
             self.move_to(i, j)
             self.owner.unitDone()
 
