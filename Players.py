@@ -1,5 +1,3 @@
-
-
 from PySide.QtCore import Qt
 
 class Player:
@@ -63,7 +61,6 @@ class Player:
         self.game.nextPlayerAction()
     
     def cycleUnits(self):
-        print self.game.map.units
         try:
             self.currentUnit.tile.setChosen(False)
         except AttributeError:
@@ -75,7 +72,7 @@ class Player:
             self.printableUnitIndex = 0
             self.currentUnit = None
         elif self.game.map.units[self.unitIndex].owner != self:
-            print 'enemy', self.unitIndex, self.game.map.units[self.unitIndex], self.game.map.units[self.unitIndex].owner
+            print 'enemy', self.unitIndex
             self.cycleUnits()
         else:
             print 'own', self.unitIndex
@@ -134,17 +131,11 @@ class AIPlayer(Player):
         self.cycleUnits()
         import time
         while self.currentUnit:
-<<<<<<< HEAD
-            if self.currentUnit.id == "settlement":
-                self.currentUnit.recruit("tank")
-=======
-            
->>>>>>> 571d40934fffa7cb2347cafc1ce3b4347edb0033
+            print "CURRENTUNIT", self.currentUnit
             self.currentUnit.tile.ensureVisible()
             
             if self.currentUnit.id == "settlement":
                 self.currentUnit.recruit("tank")
-                self.cycleUnits()
             
             elif self.currentUnit.id == "tank":
                 for unit in self.game.map.units:
@@ -159,22 +150,54 @@ class AIPlayer(Player):
                             tile = route.pop()
                             self.currentUnit.move(tile.i, tile.j, ai=True)
                     
-            elif self.currentUnit.id == "builder":          
-                neighboring = self.currentUnit.tile.getNeighborsI()
+            elif self.currentUnit.id == "builder":      
+                print "BUILDER"    
+                neighboring = self.currentUnit.tile.getBoardNeighbors()
                 for neighbour in neighboring:
-                    try:
-                        if self.currentUnit.tile.map.tiles[neighbour[0]][neighbour[1]].units:
-                            for unit in self.currentUnit.tile.map.tiles[neighbour[0]][neighbour[1]].units:
-                                print "AI, yksikkoja", unit
-                                if unit.id == "gold":
-                                    print "AI:kulta"
-                                    self.currentUnit.build('mine')
-                                    break
-                                else:
-                                    self.currentUnit.attack(unit)
-                                    break
-                    except (IndexError, TypeError):
-                        pass           
+                    if self.currentUnit.tile.map.tiles[neighbour[0]][neighbour[1]].units:
+                        print "if unit"
+                        for unit in self.currentUnit.tile.map.tiles[neighbour[0]][neighbour[1]].units:
+                            print "AI, yksikkoja", unit
+                            if unit.id == "gold":
+                                print "AI:kulta", self.game.map.unused_gold
+                                unit.tile.setChosen(True)
+                                self.currentUnit.building = "mine"
+                                self.currentUnit.doBuild(unit.tile.i, unit.tile.j)
+                                print self.game.map.unused_gold, unit
+                                self.game.map.unused_gold.remove(unit)
+                    '''except (IndexError, TypeError):
+                        print "VIRHE, siirrytaan seuraavaan yksikkoon"
+                        pass '''
+                print self.game.map.units
+                min_dist = 100
+                nearest = None
+                curloc = self.currentUnit.tile
+                for gold_place in self.game.map.unused_gold:
+                    dist = curloc.distance(gold_place.tile.i, gold_place.tile.j)
+                    if dist < min_dist:
+                        free = True
+                        for unit in gold_place.tile.units:
+                            if unit.id == "mine":
+                                free = False
+                        if free:
+                            min_dist = dist
+                            nearest = gold_place
+                location_i, location_j = nearest.tile.i, nearest.tile.j
+                route = self.currentUnit.tile.getRoute(location_i, location_j)
+                if not route:
+                    pass
+                elif len(route)-1 <= max(self.currentUnit.moves):
+                    print "IN-range"
+                    dest_i, dest_j = route[1].i, route[1].j
+                    self.currentUnit.move(dest_i, dest_j, ai=True)
+                else:
+                    print "OUT-range"
+                    for i in range(max(self.currentUnit.moves)-1):
+                        route.pop()
+                    tile = route.pop()
+                    self.currentUnit.move(tile.i, tile.j, ai=True)
+                    
+                              
             time.sleep(1)                   
             self.cycleUnits()                 
 # if self.currentUnit.tile.map.tiles[neighbour[0]][neighbour[1]].terrain.canHoldUnit:

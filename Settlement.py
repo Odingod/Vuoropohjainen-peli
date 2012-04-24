@@ -46,6 +46,7 @@ class Settlement(Building):
             return False
 
         unit = type(owner=owner, tile=tile)
+        self.map.units.append(unit)
         tile.addUnit(unit)
         self.owner.unitCount += 1
         self.owner.treasury -= price

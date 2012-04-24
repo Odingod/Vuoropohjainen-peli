@@ -40,8 +40,8 @@ def _showUnitDialog(units, event):
     for unit in units:
         if unit.owner == game.currentPlayer and unit not in unit.owner.doneUnits:
             game.currentPlayer.currentUnit = unit
-            game.singletonObject = UnitActionForm(mainW)
-            game.singletonObject.exec_()
+            #ala lisaa mitaan parametreja olion luontiin. EI MUUTEN TOIMI!
+            game.singletonObject = UnitActionForm()
 
 class Game:
     def __init__(self):
@@ -302,7 +302,8 @@ class NewGameDialog(QDialog):
         self.single()
 
 # user is displayed commands for a unit
-class UnitActionForm(QDialog):
+class UnitActionForm(QDockWidget):
+    #Ala muuta taman widgetin tyyppia QDialogiksi, EI TOIMI JOS NIIN TEET!
     def __init__(self, parent=None):
         super(UnitActionForm, self).__init__(parent)
         methods = (
@@ -318,7 +319,11 @@ class UnitActionForm(QDialog):
                 ('Recruit ranged', lambda: self.recruitAction('ranged')),
                 ('Recruit builder', lambda: self.recruitAction('builder')),
             )
-        
+
+        self.title = QLabel('Unit Actions')
+        self.title.setIndent(10)
+        self.updateTitle()
+        self.setTitleBarWidget(self.title)
         layout = QFormLayout()
         actionButtonGroupBox = QWidget()
         abLayout = QVBoxLayout()
@@ -330,9 +335,12 @@ class UnitActionForm(QDialog):
             abLayout.addWidget(btn)
         actionButtonGroupBox.setLayout(abLayout)
         layout.addRow(actionButtonGroupBox)
-        self.setLayout(layout)
-        self.updateTitle()
 
+        self.widget = QWidget()
+        self.widget.setLayout(layout)
+        self.setWidget(self.widget)
+        self.show()
+    
     def updateTitle(self):
         mainW.bottomDock.updateTitle()
 
@@ -370,7 +378,7 @@ class UnitActionForm(QDialog):
     def delete(self):
         if game.singletonObject:
             game.singletonObject = None
-            self.done(0)
+            self.destroy()
 
 class BottomDock(QDockWidget):
     def __init__(self, parent):

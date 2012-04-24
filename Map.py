@@ -13,6 +13,7 @@ class Map(object):
         self.metrics = Hexagon(-1, -1)
         self.waitingInput = []
         self.units = []
+        self.unused_gold = []
 
     def __saveable__(self):
         d = {}
@@ -117,7 +118,9 @@ class Map(object):
             row = choice(self.tiles)
             tile = choice(row)
             if tile.terrain.canHoldUnit and not tile.units:
-                tile.addUnit(Gold())
+                gold = Gold()
+                tile.addUnit(gold)
+                self.unused_gold.append(gold)
                 gold_count += 1
                 
 
