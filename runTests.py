@@ -5,7 +5,9 @@ from Map import *
 from Players import *
 from Settlement import *
 from PySide.QtGui import QApplication
-
+from application import *
+import random
+import StringIO
 class TestPlayer(unittest.TestCase):
 
 	def setUp(self):
@@ -13,7 +15,7 @@ class TestPlayer(unittest.TestCase):
 		self.dg=DummyGame()
 		self.p1=Player(self.dg)
 		self.p2=Player(self.dg)
-		self.m=Map.Map()
+		self.m=Map()
 		self.m.createSquareMap(3,[self.p1, self.p2])
 		print "created"
 	def test_unitnumber(self):
@@ -73,6 +75,36 @@ class TestUnitSaving(unittest.TestCase):
     def tearDown(self):
         pass
 
+#Jesse Makkonen
+class TestUnits(unittest.TestCase):
+    def setUp(self):
+        random.seed(1337)
+        self.game = Game()
+        self.player = HumanPlayer(self.game)
+        self.game.map.createSquareMap(self.game.numUnits, [self.player], 50, 1)
+        self.output = StringIO.StringIO()
+        self.old_output = sys.stdout
+        sys.stdout = self.output
+    def testMove(self):
+        try:
+            for unit in self.game.map.units:
+                unit.move(0,3)
+                unit.move(2,0)
+        except IndexError:
+            pass
+        string = self.output.getvalue().strip()
+        string = string.split('\n')
+        for i in range(5):
+            self.assertTrue("can't" in string[i])
+        self.assertEqual(100, self.game.map.units[0].hp)
+        self.assertEqual(7, len(string))
+        self.game.map.units[0].takeDamage(50)
+        self.assertEqual(50, self.game.map.units[0].hp)
+        self.game.map.units[0].takeDamage(100)
+        self.assertEqual(10, self.game.map.units[0].hp)
+        sys.stdout = self.old_output
+    def tearDown(self):
+        pass
 
 class DummyGame():
     def __init__(self):
