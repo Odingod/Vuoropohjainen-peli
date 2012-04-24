@@ -135,18 +135,13 @@ class Unit(object):
         self.tile.map.units.remove(self)
 
 class Building(Unit):
-<<<<<<< HEAD
-    def __init__(self, name="Building", image="castle_30x30.png",  tile=None, move=[], hp=100, owner=None):
-        Unit.__init__(self, name, QImage(image), tile, move, hp, 0, (0), owner)
-=======
     def __init__(self, *args, **kwargs):
         kwargs.pop('moves', None)
         Unit.__init__(self, *args, moves=(), **kwargs)
->>>>>>> 571d40934fffa7cb2347cafc1ce3b4347edb0033
 
     def move(self, i=None, j=None, ai=False):
         print "can't move a building"
-		
+
 class Tank(Unit):
     def __init__(self, tile=None, owner=None):
         Unit.__init__(self, 'tank', QImage('alien1.png'), tile, (1, 2, 3), 25,
@@ -159,20 +154,6 @@ class Melee(Unit):
 
 class Ranged(Unit):
     def __init__(self, tile=None, owner=None):
-<<<<<<< HEAD
-        Unit.__init__(self, 'ranged', QImage('range.png'), tile, (1, 2), 15, 15, (1, 2), owner)
-    
-    def move(self, i, j, fun=None, ai=False):
-        if not self.tile.map.tiles[i][j].chosen and not ai:
-            print "You can't move there"
-            self.tile.map.addAction(self.move)
-        elif self.tile.map.tiles[i][j].terrain.canHoldUnit:
-            super(Range, self).move(i, j)
-            if fun:
-                fun()
-            if not ai:
-                self.owner.nextUnitAction()
-=======
         Unit.__init__(self, 'ranged', QImage('range.png'), tile, (1, 2), 15,
                 (10,16), (1, 2), owner)
 
@@ -196,7 +177,7 @@ class Builder(Unit):
             self.building = building
             self.tile.map.addAction(self.doBuild)
             self.tile.setChosenByDist(self.buildRange)
->>>>>>> 571d40934fffa7cb2347cafc1ce3b4347edb0033
+                
         else:
             print 'Cannot build such a unit.'
             return False
