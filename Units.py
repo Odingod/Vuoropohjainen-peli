@@ -4,6 +4,7 @@ from save import saveable, load
 from Players import Player
 from functools import partial
 import random
+import time
 
 class Unit(object):
     def __init__(self, id, image, tile=None, moves=(0, 1), hp=30, damage=(5,11), range=(1,), owner=None):
@@ -58,8 +59,7 @@ class Unit(object):
             lista = self.tile.getRoute(i, j)
             for hex in lista:
                 self.move_to(hex.i, hex.j)
-                app.exec_()
-                wait(5)
+                time.sleep(0.5)
             self.move_to(i, j)
             self.owner.unitDone()
 
